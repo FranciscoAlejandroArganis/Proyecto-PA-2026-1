@@ -4,73 +4,207 @@
  */
 package com.pa.csv;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
  *
  * @author francisco-alejandro
  */
-public class CSVParser {
+public class CSVParser implements Iterator<String[]> {
 
+    private enum State {
+        WHITE_SPACE_LEFT,
+        WHITE_SPACE_RIGHT,
+        OPENING_QUOTATION,
+        CLOSING_QUOTATION,
+        RAW_VALUE
+    }
+
+    private BufferedReader reader;
+    private StringBuilder sb;
     private String line;
-    private int start;
-    private int end;
     private List<String> values;
+    private State state;
+    private int i, j;
+    boolean done;
 
-    public CSVParser() {
+    public CSVParser(BufferedReader reader) {
+        this.reader = reader;
+        sb = new StringBuilder();
         values = new ArrayList<>();
     }
 
-    // start en la primera posición después de ,
-    public String[] parseLine(String line) {
-        this.line = line;
-        values.clear();
-        start = 0;
-        while (true) {
-            if (start >= line.length()) {
-                values.add("");
-                break;
+    @Override
+    public boolean hasNext() {
+        try {
+            line = reader.readLine();
+            if (line == null) {
+                return false;
             }
-            if (line.charAt(start) == '\"') {
-                start++;
-                if (stringScan()) {
-                    break;
+            reset();
+            while (true) {
+                processLine();
+                if (done) {
+                    return true;
+                }
+                i = 0;
+                j = 0;
+                line = reader.readLine();
+                if (line == null) {
+                    throw new CSVFormatException();
                 }
             }
-            end = line.indexOf(",", start);
-            if (end < 0) {
-                values.add(line.substring(start));
-                break;
-            }
-            values.add(line.substring(start, end));
-            start = end + 1;
+        } catch (IOException e) {
+            return false;
         }
+    }
+
+    @Override
+    public String[] next() {
         return values.toArray(new String[0]);
     }
 
-    // start en la primera posición después de "
-    private boolean stringScan() {
-        end = start;
+    private void reset() {
+        state = State.WHITE_SPACE_LEFT;
+        sb.delete(0, sb.length());
+        values.clear();
+        done = false;
+        i = 0;
+        j = 0;
+    }
+
+    private void processLine() {
         while (true) {
-            end = line.indexOf("\"", end);
-            if (end < 0) {
-                throw new IllegalArgumentException();
+            switch (state) {
+                case State.WHITE_SPACE_LEFT:
+                    if (whiteSpaceLeft()) {
+                        return;
+                    }
+                    break;
+                case State.WHITE_SPACE_RIGHT:
+                    if (whiteSpaceRight()) {
+                        return;
+                    }
+                    break;
+                case State.OPENING_QUOTATION:
+                    if (openingQuotation()) {
+                        return;
+                    }
+                    break;
+                case State.CLOSING_QUOTATION:
+                    if (closingQuotation()) {
+                        return;
+                    }
+                    break;
+                default:
+                    if (rawValue()) {
+                        return;
+                    }
             }
-            if (end + 1 >= line.length()) {
-                values.add(line.substring(start, end).replace("\"\"", "\""));
-                return true;
-            }
-            if (line.charAt(end + 1) == ',') {
-                values.add(line.substring(start, end).replace("\"\"", "\""));
-                start = end + 2;
-                return false;
-            }
-            if (line.charAt(end + 1) != '\"') {
-                throw new IllegalArgumentException();
-            }
-            end += 2;
         }
+    }
+
+    private boolean whiteSpaceLeft() {
+        if (j >= line.length()) {
+            values.add("");
+            done = true;
+            return true;
+        }
+        char currentChar = line.charAt(j);
+        if (currentChar == ',') {
+            values.add("");
+        } else if (currentChar == '"') {
+            sb.delete(0, sb.length());
+            i = j + 1;
+            state = State.OPENING_QUOTATION;
+        } else if (!Character.isWhitespace(currentChar)) {
+            i = j;
+            state = State.RAW_VALUE;
+        }
+        j++;
+        return false;
+    }
+
+    private boolean whiteSpaceRight() {
+        if (j >= line.length()) {
+            done = true;
+            return true;
+        }
+        char currentChar = line.charAt(j);
+        if (currentChar == ',') {
+            state = State.WHITE_SPACE_LEFT;
+        } else if (!Character.isWhitespace(currentChar)) {
+            throw new CSVFormatException();
+        }
+        j++;
+        return false;
+    }
+
+    private boolean openingQuotation() {
+        if (j >= line.length()) {
+            sb.append(line.substring(i));
+            sb.append('\n');
+            done = false;
+            return true;
+        }
+        char currentChar = line.charAt(j);
+        if (currentChar == '"') {
+            state = State.CLOSING_QUOTATION;
+        }
+        j++;
+        return false;
+    }
+
+    private boolean closingQuotation() {
+        if (j >= line.length()) {
+            sb.append(line.substring(i, line.length() - 1));
+            values.add(sb.toString().replace("\"\"", "\""));
+            sb.delete(0, sb.length());
+            done = true;
+            return true;
+        }
+        char currentChar = line.charAt(j);
+        if (currentChar == ',') {
+            sb.append(line.substring(i, j - 1));
+            values.add(sb.toString().replace("\"\"", "\""));
+            sb.delete(0, sb.length());
+            state = State.WHITE_SPACE_LEFT;
+        } else if (currentChar == '"') {
+            state = State.OPENING_QUOTATION;
+        } else if (!Character.isWhitespace(currentChar)) {
+            throw new CSVFormatException();
+        } else {
+            sb.append(line.substring(i, j - 1));
+            values.add(sb.toString().replace("\"\"", "\""));
+            sb.delete(0, sb.length());
+            state = State.WHITE_SPACE_RIGHT;
+        }
+        j++;
+        return false;
+    }
+
+    private boolean rawValue() {
+        if (j >= line.length()) {
+            values.add(line.substring(i));
+            done = true;
+            return true;
+        }
+        char currentChar = line.charAt(j);
+        if (currentChar == ',') {
+            values.add(line.substring(i, j));
+            state = State.WHITE_SPACE_LEFT;
+        } else if (currentChar == '"') {
+            throw new CSVFormatException();
+        } else if (Character.isWhitespace(currentChar)) {
+            values.add(line.substring(i, j));
+            state = State.WHITE_SPACE_RIGHT;
+        }
+        j++;
+        return false;
     }
 
 }

@@ -53,6 +53,30 @@ public class Accumulator {
     }
 
     /**
+     * Asigna la cantidad de datos agregados al acumulador
+     * @param numData 
+     */
+    public void setNumData(int numData) {
+        this.numData = numData;
+    }
+
+    /**
+     * Regresa el arreglo con los valores de las sumas acumuladas de cada variable
+     * @return el arreglo de las sumas acumuladas
+     */
+    public double[] getSingle() {
+        return single;
+    }
+
+    /**
+     * Regresa el arreglo con los valores de las sumas acumuladas de productos de pares variables
+     * @return el arreglo de las sumas acumuladas de productos por pares
+     */
+    public double[] getPair() {
+        return pair;
+    }
+
+    /**
      * Regresa el total acumulado de los datos agregados al acumulador de una
      * variable
      *

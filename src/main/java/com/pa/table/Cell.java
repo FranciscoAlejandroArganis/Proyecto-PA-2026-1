@@ -102,10 +102,9 @@ public class Cell {
                 return Double.toString(getFloat());
             case Cell.Type.Str:
                 return '\"' + getStr().replaceAll("\"", "\"\"") + '\"';
-            case Cell.Type.Time:
+            default:
                 return Long.toString(getTime().toEpochSecond(ZoneOffset.UTC));
         }
-        throw new CellTypeMismatchException();
     }
 
     public static Cell parseCell(String string, Type type) {
@@ -121,11 +120,10 @@ public class Cell {
                 return new Cell(floatVal);
             case Cell.Type.Str:
                 return new Cell(string);
-            case Cell.Type.Time:
+            default:
                 LocalDateTime timeVal = LocalDateTime.ofEpochSecond(Long.parseLong(string), 0, ZoneOffset.UTC);
                 return new Cell(timeVal);
         }
-        throw new CellTypeMismatchException();
     }
 
 }

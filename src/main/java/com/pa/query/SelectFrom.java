@@ -26,7 +26,7 @@ public class SelectFrom implements Function<Row, Row> {
     public Row apply(Row row) {
         Row result = new Row(select);
         for (int i = 0; i < select.size(); i++) {
-            int j = from.indexOf(select.column(i));
+            int j = from.indexOf(select.column(i).getName());
             result.setCell(i, row.getCell(j));
         }
         return result;

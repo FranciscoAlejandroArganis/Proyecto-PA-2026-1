@@ -55,36 +55,34 @@ public class Reviews {
 
     public static void main(String[] args) throws IOException {
         Accumulator acc = new Accumulator(12);
-        CSVParser parser = new CSVParser();
         Row row = new Row(HEADER);
         QueryReader qr = new QueryReader();
         SelectFromWhere query = qr.readQuery();
-        double[] values = new double[12];
         try (
                 BufferedReader reader = new BufferedReader(new FileReader("reviews.csv")); BufferedWriter writer = new BufferedWriter(new FileWriter("out.csv"))) {
-            while (true) {
-                String line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
+            CSVParser parser = new CSVParser(reader);
+            while (parser.hasNext()) {
                 try {
-                    row.fill(parser.parseLine(line));
-                    values[0] = row.getCell(4).getInt();
-                    values[1] = row.getCell(5).getInt();
-                    values[2] = row.getCell(6).getInt();
-                    values[3] = row.getCell(7).getInt();
-                    values[4] = row.getCell(8).getInt();
-                    values[5] = row.getCell(9).getTime().toEpochSecond(ZoneOffset.UTC);
-                    values[6] = row.getCell(12).getTime().toEpochSecond(ZoneOffset.UTC);
-                    values[7] = row.getCell(13).getTime().toEpochSecond(ZoneOffset.UTC);
-                    values[8] = row.getCell(15).getInt();
-                    values[9] = row.getCell(16).getInt();
-                    values[10] = row.getCell(17).getFloat();
-                    values[11] = row.getCell(18).getInt();
-                    acc.add(values);
+                    row.fill(parser.next());
+                    acc.add(
+                            new double[]{
+                                row.getCell(4).getInt(),
+                                row.getCell(5).getInt(),
+                                row.getCell(6).getInt(),
+                                row.getCell(7).getInt(),
+                                row.getCell(8).getInt(),
+                                row.getCell(9).getTime().toEpochSecond(ZoneOffset.UTC),
+                                row.getCell(12).getTime().toEpochSecond(ZoneOffset.UTC),
+                                row.getCell(13).getTime().toEpochSecond(ZoneOffset.UTC),
+                                row.getCell(15).getInt(),
+                                row.getCell(16).getInt(),
+                                row.getCell(17).getFloat(),
+                                row.getCell(18).getInt()
+                            }
+                    );
                     Row result = query.apply(row);
-                    if (row != null) {
-                        writer.write(row.toString());
+                    if (result != null) {
+                        writer.write(result.toString());
                         writer.newLine();
                     }
                 } catch (Exception e) {

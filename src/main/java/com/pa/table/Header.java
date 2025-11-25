@@ -14,13 +14,13 @@ import java.util.Map;
 public class Header {
 
     private Column[] columns;
-    private Map<Column, Integer> map;
+    private Map<String, Integer> map;
 
     public Header(Column[] columns) {
         this.columns = columns;
         map = new HashMap<>();
         for (int i = 0; i < columns.length; i++) {
-            map.put(columns[i], i);
+            map.put(columns[i].getName(), i);
         }
     }
 
@@ -32,8 +32,8 @@ public class Header {
         return columns[i];
     }
 
-    public int indexOf(Column column) {
-        return map.get(column);
+    public int indexOf(String columnName) {
+        return map.getOrDefault(columnName, -1);
     }
 
 }
