@@ -52,7 +52,7 @@ public class FileUtils {
         File fragment;
         long start = 1;
         long end = fragLines;
-        int id = 1;
+        int id = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             while (end <= totalLines) {
                 fragment = new File(dir, prefix + id);

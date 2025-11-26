@@ -4,25 +4,24 @@
  */
 package com.pa.reviews;
 
-import com.pa.csv.CSVParser;
 import com.pa.query.SelectFromWhere;
-import com.pa.stats.Accumulator;
 import com.pa.table.Cell;
 import com.pa.table.Column;
 import com.pa.table.Header;
-import com.pa.table.Row;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.ZoneOffset;
+import java.io.File;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  *
  * @author francisco-alejandro
  */
 public class Reviews {
+
+    public static final Logger LOGGER = Logger.getLogger("ReviewsLogger");
 
     public static final Header HEADER = new Header(
             new Column[]{
@@ -53,42 +52,35 @@ public class Reviews {
             }
     );
 
-    public static void main(String[] args) throws IOException {
-        Accumulator acc = new Accumulator(12);
-        Row row = new Row(HEADER);
+    public static final String[] NUMERIC_VARS = {
+        "Games owned",
+        "Author reviews",
+        "Total playtime",
+        "Playtime last 2 weeks",
+        "Playtime at review",
+        "Last played",
+        "Created",
+        "Updated",
+        "Votes up",
+        "Votes funny",
+        "Weighted vote score",
+        "Comments"
+    };
+
+    public static void main(String[] args) throws Exception {
+        // Inicializar log
+        LOGGER.setUseParentHandlers(false);
+        Handler handler = new FileHandler("Reviews.log");
+        Formatter formatter = new SimpleFormatter();
+        handler.setFormatter(formatter);
+        LOGGER.addHandler(handler);
+        
+        // Procesar los datos
         QueryReader qr = new QueryReader();
         SelectFromWhere query = qr.readQuery();
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader("reviews.csv")); BufferedWriter writer = new BufferedWriter(new FileWriter("out.csv"))) {
-            CSVParser parser = new CSVParser(reader);
-            while (parser.hasNext()) {
-                try {
-                    row.fill(parser.next());
-                    acc.add(
-                            new double[]{
-                                row.getCell(4).getInt(),
-                                row.getCell(5).getInt(),
-                                row.getCell(6).getInt(),
-                                row.getCell(7).getInt(),
-                                row.getCell(8).getInt(),
-                                row.getCell(9).getTime().toEpochSecond(ZoneOffset.UTC),
-                                row.getCell(12).getTime().toEpochSecond(ZoneOffset.UTC),
-                                row.getCell(13).getTime().toEpochSecond(ZoneOffset.UTC),
-                                row.getCell(15).getInt(),
-                                row.getCell(16).getInt(),
-                                row.getCell(17).getFloat(),
-                                row.getCell(18).getInt()
-                            }
-                    );
-                    Row result = query.apply(row);
-                    if (result != null) {
-                        writer.write(result.toString());
-                        writer.newLine();
-                    }
-                } catch (Exception e) {
-                }
-            }
-        }
+        Manager manager = new Manager(1024, new File("reviews.csv"), new File("temp"), new File("out.csv"), new File("stats.txt"), query);
+        manager.partition();
+        manager.manageWorkers();
     }
 
 }

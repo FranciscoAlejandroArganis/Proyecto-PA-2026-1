@@ -44,36 +44,18 @@ public class Accumulator {
     }
 
     /**
-     * Regresa la cantidad de datos agregados al acumulador
+     * Agrega al acumulador actual todos los datos de otro acumulador
      *
-     * @return la cantidad de datos de cada variable
+     * @param other otro acumulador con la misma cantidad de variables
      */
-    public int getNumData() {
-        return numData;
-    }
-
-    /**
-     * Asigna la cantidad de datos agregados al acumulador
-     * @param numData 
-     */
-    public void setNumData(int numData) {
-        this.numData = numData;
-    }
-
-    /**
-     * Regresa el arreglo con los valores de las sumas acumuladas de cada variable
-     * @return el arreglo de las sumas acumuladas
-     */
-    public double[] getSingle() {
-        return single;
-    }
-
-    /**
-     * Regresa el arreglo con los valores de las sumas acumuladas de productos de pares variables
-     * @return el arreglo de las sumas acumuladas de productos por pares
-     */
-    public double[] getPair() {
-        return pair;
+    public void addAll(Accumulator other) {
+        for (int i = 0; i < single.length; i++) {
+            single[i] += other.single[i];
+        }
+        for (int i = 0; i < pair.length; i++) {
+            pair[i] += other.pair[i];
+        }
+        numData += other.numData;
     }
 
     /**
@@ -165,6 +147,15 @@ public class Accumulator {
         denominator = Math.sqrt(denominator * (sum(j, j) * numData - sum(j) * sum(j)));
         double correlationCoefficient = numerator / denominator;
         return new SLRResult(slope, intercept, correlationCoefficient);
+    }
+
+    /**
+     * Regresa la cantidad de datos agregados al acumulador
+     *
+     * @return la cantidad de datos de cada variable
+     */
+    public int getNumData() {
+        return numData;
     }
 
 }
