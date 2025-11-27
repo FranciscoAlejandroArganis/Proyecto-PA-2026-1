@@ -6,7 +6,6 @@ package com.pa.reviews;
 
 import com.pa.query.SelectFromWhere;
 import com.pa.table.Cell;
-import com.pa.table.Column;
 import com.pa.table.Header;
 import com.pa.table.Row;
 import java.util.Scanner;
@@ -149,11 +148,7 @@ public class QueryReader {
     }
 
     private SelectFromWhere buildQueryObject() {
-        Column[] columns = new Column[indexList.length];
-        for (int i = 0; i < columns.length; i++) {
-            columns[i] = Reviews.HEADER.column(indexList[i]);
-        }
-        Header select = new Header(columns);
+        Header select = Reviews.HEADER.subset(indexList);
         Header from = Reviews.HEADER;
         Predicate<Row> where;
         switch (type) {

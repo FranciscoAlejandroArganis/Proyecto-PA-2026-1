@@ -50,20 +50,20 @@ public class FileUtils {
      */
     public static void splitLines(File file, File dir, long totalLines, long fragLines, String prefix) throws IOException {
         File fragment;
-        long start = 1;
+        long start = 0;
         long end = fragLines;
         int id = 0;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            while (end <= totalLines) {
+            while (end < totalLines) {
                 fragment = new File(dir, prefix + id);
                 writeFragment(fragment, reader, fragLines);
-                start = end + 1;
+                start = end;
                 end += fragLines;
                 id++;
             }
-            if (end > totalLines) {
+            if (end >= totalLines) {
                 fragment = new File(dir, prefix + id);
-                writeFragment(fragment, reader, totalLines - start + 1);
+                writeFragment(fragment, reader, totalLines - start);
             }
         }
     }

@@ -6,6 +6,7 @@ package com.pa.table;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 
 /**
  *
@@ -88,6 +89,32 @@ public class Cell {
         return (LocalDateTime) value;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + Objects.hashCode(this.type);
+        hash = 29 * hash + Objects.hashCode(this.value);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Cell other = (Cell) obj;
+        if (this.type != other.type) {
+            return false;
+        }
+        return Objects.equals(this.value, other.value);
+    }
+    
     @Override
     public String toString() {
         switch (type) {

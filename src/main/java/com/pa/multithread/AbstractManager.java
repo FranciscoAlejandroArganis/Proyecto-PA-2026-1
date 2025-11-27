@@ -13,7 +13,7 @@ public abstract class AbstractManager {
     protected boolean useVirtualThreads;
     protected Thread[] threads;
     
-    public void manageWorkers() {
+    public void start() {
         Thread.Builder builder = useVirtualThreads ? Thread.ofVirtual() : Thread.ofPlatform();
         for (int i = 0; i < threads.length; i++) {
             threads[i] = builder.start(getWorker(i));

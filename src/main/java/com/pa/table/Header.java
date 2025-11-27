@@ -20,7 +20,13 @@ public class Header {
         this.columns = columns;
         map = new HashMap<>();
         for (int i = 0; i < columns.length; i++) {
-            map.put(columns[i].getName(), i);
+            String name = columns[i].getName();
+            if (name == null) {
+                throw new NullPointerException("Nombre de columna nulo");
+            }
+            if (map.put(name, i) != null) {
+                throw new IllegalArgumentException("Nombres de columnas repetidos");
+            }
         }
     }
 
@@ -34,6 +40,28 @@ public class Header {
 
     public int indexOf(String columnName) {
         return map.getOrDefault(columnName, -1);
+    }
+
+    public Header subset(int[] indices) {
+        Column[] columns = new Column[indices.length];
+        for (int i = 0; i < indices.length; i++) {
+            int j = indices[i];
+            if (0 <= j && j < this.columns.length) {
+                columns[i] = this.columns[j];
+            }
+        }
+        return new Header(columns);
+    }
+
+    public Header subset(String[] names) {
+        Column[] columns = new Column[names.length];
+        for (int i = 0; i < names.length; i++) {
+            int j = indexOf(names[i]);
+            if (0 <= j && j < this.columns.length) {
+                columns[i] = this.columns[j];
+            }
+        }
+        return new Header(columns);
     }
 
 }
