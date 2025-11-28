@@ -4,15 +4,21 @@
  */
 package com.pa.reviews;
 
+import com.pa.consumers.CountByTime;
 import com.pa.consumers.Filter;
+import com.pa.consumers.MinMaxTime;
 import com.pa.consumers.Tally;
 import com.pa.multithread.AbstractWorker;
+import com.pa.query.SelectFromWhere;
 import com.pa.stats.Accumulator;
 import com.pa.table.Cell;
+import com.pa.table.Row;
+import com.pa.time.SegmentedTimePeriod;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -21,7 +27,8 @@ import java.io.IOException;
 public class Worker extends AbstractWorker {
 
     public enum Task {
-        FILTER_AND_TALLY,
+        FIRST_PASS,
+        SECOND_PASS,
         DONE
     }
 
@@ -30,37 +37,58 @@ public class Worker extends AbstractWorker {
     private File filteredFrag;
     private Program program;
     private Tally tally;
+    private MinMaxTime minMaxTime;
+    private CountByTime countByTime;
     private Accumulator acc;
 
     public Worker(Manager manager, int id) {
         this.manager = manager;
         this.program = manager.getProgram();
-        this.datasetFrag = new File(program.getTempDir(), program.getDataset().getName() + id);
-        this.filteredFrag = new File(program.getTempDir(), program.getFiltered().getName() + id);
+        this.datasetFrag = new File(program.getFilesInfo().getTempDir(), program.getFilesInfo().getDataset().getName() + id);
+        this.filteredFrag = new File(program.getFilesInfo().getTempDir(), program.getFilesInfo().getFiltered().getName() + id);
         this.id = id;
-        currentTask = Task.FILTER_AND_TALLY;
+        currentTask = Task.FIRST_PASS;
     }
 
     @Override
     public void doWork() {
         switch (currentTask) {
-            case Task.FILTER_AND_TALLY:
-                filterAndTally();
+            case Task.FIRST_PASS:
+                firstPass();
+                break;
+            case Task.SECOND_PASS:
+                secondPass();
                 break;
             default:
                 return;
         }
     }
 
-    public void filterAndTally() {
-        tally = new Tally(program.getColsToTally());
+    private void firstPass() {
+        tally = new Tally(program.getAnalysisInfo().getColsToTally());
+        minMaxTime = new MinMaxTime(program.analysisInfo.getTimeColIndex());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filteredFrag))) {
-            RowProcessor processor = new RowProcessor(datasetFrag);
+            RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
             Filter filter = new Filter(program.getQuery(), writer);
-            processor.process(filter.andThen(tally));
+            processor.process(filter.andThen(tally).andThen(minMaxTime));
         } catch (IOException e) {
             
         }
+    }
+    
+    private void secondPass(){
+        SelectFromWhere selGroupCols = program.analysisInfo.selGroupCols();
+        SegmentedTimePeriod period = new SegmentedTimePeriod(program.getMinTime(), program.getMaxTime(), program.getAnalysisInfo().getNumSegments());
+        countByTime = new CountByTime(selGroupCols, period, program.getGroupReps(), program.getAnalysisInfo().getTimeColIndex());
+        try {
+            RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
+            processor.process(countByTime);
+        } catch (IOException e) {
+            
+        }
+    }
+    
+    public void countByTime(){
         currentTask = Task.DONE;
     }
 
@@ -68,8 +96,24 @@ public class Worker extends AbstractWorker {
         return currentTask;
     }
     
-    public UniqueCounter<Cell>[] getCounters(){
+    public void setCurrentTask(Task currentTask){
+        this.currentTask = currentTask;
+    }
+    
+    public Counter<Cell>[] getCounters(){
         return tally.getCounters();
+    }
+    
+    public Counter<Pair<Row,Integer>> getCounter(){
+        return countByTime.getCounter();
+    }
+
+    public LocalDateTime getMinTime() {
+        return minMaxTime.getMin();
+    }
+    
+    public LocalDateTime getMaxTime() {
+        return minMaxTime.getMax();
     }
 
 }

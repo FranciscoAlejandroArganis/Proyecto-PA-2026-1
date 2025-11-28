@@ -27,8 +27,8 @@ public class Filter implements Consumer<Row> {
 
     @Override
     public void accept(Row row) {
-        Row result = query.apply(row);
-        if (result != null) {
+        row = query.apply(row);
+        if (row != null) {
             try {
                 writer.write(row.toString());
                 writer.newLine();

@@ -25,11 +25,16 @@ public class QueryReader {
         GREATER
     }
 
+    private Header header;
     private int[] indexList;
     private int index;
     private Cell.Type type;
     private Cell value;
     private Operator op;
+    
+    public QueryReader(Header header){
+        this.header = header;
+    }
 
     public SelectFromWhere readQuery() {
         try (Scanner sc = new Scanner(System.in).useDelimiter("\n")) {
@@ -38,14 +43,14 @@ public class QueryReader {
                 if (readIndexList(sc)) {
                     break;
                 }
-                System.out.println("Por favor ingresa * o una lista no vacía de índices (0 a " + (Reviews.HEADER.size() - 1) + ") separados por comas");
+                System.out.println("Por favor ingresa * o una lista no vacía de índices (0 a " + (header.size() - 1) + ") separados por comas");
             }
             while (true) {
                 System.out.print("Columna del criterio de búsqueda: ");
                 if (readIndex(sc)) {
                     break;
                 }
-                System.out.println("Por favor ingresa un índice (0 a " + (Reviews.HEADER.size() - 1) + ")");
+                System.out.println("Por favor ingresa un índice (0 a " + (header.size() - 1) + ")");
             }
             while (true) {
                 System.out.print("Operador del criterio de búsqueda: ");
@@ -69,8 +74,8 @@ public class QueryReader {
         try {
             String input = sc.next();
             if (input.equals("*")) {
-                indexList = new int[Reviews.HEADER.size()];
-                for (int i = 0; i < Reviews.HEADER.size(); i++) {
+                indexList = new int[header.size()];
+                for (int i = 0; i < header.size(); i++) {
                     indexList[i] = i;
                 }
                 return true;
@@ -82,7 +87,7 @@ public class QueryReader {
             indexList = new int[indices.length];
             for (int i = 0; i < indices.length; i++) {
                 indexList[i] = Integer.parseInt(indices[i]);
-                if (indexList[i] < 0 || indexList[i] >= Reviews.HEADER.size()) {
+                if (indexList[i] < 0 || indexList[i] >= header.size()) {
                     return false;
                 }
             }
@@ -95,34 +100,30 @@ public class QueryReader {
     private boolean readIndex(Scanner sc) {
         try {
             int index = Integer.parseInt(sc.next());
-            if (index < 0 || index >= Reviews.HEADER.size()) {
+            if (index < 0 || index >= header.size()) {
                 return false;
             }
             this.index = index;
         } catch (Exception e) {
             return false;
         }
-        type = Reviews.HEADER.column(index).getType();
+        type = header.column(index).getType();
         return true;
     }
 
     private boolean readOperator(Scanner sc) {
         try {
             String input = sc.next();
-            if (input.equals("==")) {
-                op = Operator.EQUAL;
-                return true;
-            }
-            if (!(type == Cell.Type.Int || type == Cell.Type.Float)) {
-                System.out.println("Operador no válido para la columna seleccionada de tipo " + type);
-                return false;
-            }
             if (input.equals("<")) {
                 op = Operator.LESS;
                 return true;
             }
             if (input.equals("<=")) {
                 op = Operator.LESS_OR_EQUAL;
+                return true;
+            }
+            if (input.equals("==")) {
+                op = Operator.EQUAL;
                 return true;
             }
             if (input.equals(">=")) {
@@ -148,55 +149,25 @@ public class QueryReader {
     }
 
     private SelectFromWhere buildQueryObject() {
-        Header select = Reviews.HEADER.subset(indexList);
-        Header from = Reviews.HEADER;
+        Header select = header.subset(indexList);
+        Header from = header;
         Predicate<Row> where;
-        switch (type) {
-            case Cell.Type.Bool:
-                where = row -> row.getCell(index).getBool() == value.getBool();
-                break;
-            case Cell.Type.Int:
-                switch (op) {
+        switch (op) {
                     case Operator.LESS:
-                        where = row -> row.getCell(index).getInt() < value.getInt();
+                        where = row -> row.getCell(index).compareTo(value) < 0;
                         break;
                     case Operator.LESS_OR_EQUAL:
-                        where = row -> row.getCell(index).getInt() <= value.getInt();
+                        where = row -> row.getCell(index).compareTo(value) <= 0;
                         break;
                     case Operator.EQUAL:
-                        where = row -> row.getCell(index).getInt() == value.getInt();
+                        where = row -> row.getCell(index).compareTo(value) == 0;
                         break;
                     case Operator.GREATER_OR_EQUAL:
-                        where = row -> row.getCell(index).getInt() >= value.getInt();
+                        where = row -> row.getCell(index).compareTo(value) >= 0;
                         break;
                     default:
-                        where = row -> row.getCell(index).getInt() > value.getInt();
+                        where = where = row -> row.getCell(index).compareTo(value) > 0;
                 }
-                break;
-            case Cell.Type.Float:
-                switch (op) {
-                    case Operator.LESS:
-                        where = row -> row.getCell(index).getFloat() < value.getFloat();
-                        break;
-                    case Operator.LESS_OR_EQUAL:
-                        where = row -> row.getCell(index).getFloat() <= value.getFloat();
-                        break;
-                    case Operator.EQUAL:
-                        where = row -> row.getCell(index).getFloat() == value.getFloat();
-                        break;
-                    case Operator.GREATER_OR_EQUAL:
-                        where = row -> row.getCell(index).getFloat() >= value.getFloat();
-                        break;
-                    default:
-                        where = row -> row.getCell(index).getFloat() > value.getFloat();
-                }
-                break;
-            case Cell.Type.Str:
-                where = row -> row.getCell(index).getStr().equals(value.getStr());
-                break;
-            default:
-                where = row -> row.getCell(index).getTime().equals(value.getTime());
-        }
         return new SelectFromWhere(select, from, where);
     }
 

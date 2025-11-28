@@ -30,8 +30,6 @@ public abstract class AbstractManager {
     
     public abstract AbstractWorker getWorker(int id);
     
-    public abstract void partition();
-    
     public abstract boolean assign(int id);
     
     public abstract void collect(int id);

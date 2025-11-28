@@ -11,11 +11,11 @@ import java.util.Map;
  *
  * @author francisco-alejandro
  */
-public class UniqueCounter<T> {
+public class Counter<T> {
 
     private Map<T, Long> map;
 
-    public UniqueCounter() {
+    public Counter() {
         map = new HashMap<>();
     }
 

@@ -46,9 +46,10 @@ public class FileUtils {
      * @param totalLines es la cantidad total de líneas del archivo
      * @param fragLines es la cantidad de líneas de cada fragmento
      * @param prefix es el prefijo con el que son nombrados los fragmentos
+     * @returns la cantidad de fragmentos escritos
      * @throws IOException
      */
-    public static void splitLines(File file, File dir, long totalLines, long fragLines, String prefix) throws IOException {
+    public static int splitLines(File file, File dir, long totalLines, long fragLines, String prefix) throws IOException {
         File fragment;
         long start = 0;
         long end = fragLines;
@@ -64,8 +65,10 @@ public class FileUtils {
             if (end >= totalLines) {
                 fragment = new File(dir, prefix + id);
                 writeFragment(fragment, reader, totalLines - start);
+                id++;
             }
         }
+        return id;
     }
 
     /**

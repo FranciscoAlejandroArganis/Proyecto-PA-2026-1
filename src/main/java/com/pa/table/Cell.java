@@ -12,7 +12,7 @@ import java.util.Objects;
  *
  * @author francisco-alejandro
  */
-public class Cell {
+public class Cell implements Comparable<Cell> {
 
     public enum Type {
         Bool,
@@ -90,6 +90,40 @@ public class Cell {
     }
 
     @Override
+    public int compareTo(Cell other) {
+        if (type != other.type) {
+            throw new CellTypeMismatchException();
+        }
+        switch (type) {
+            case Type.Bool:
+                boolean boolA = getBool();
+                boolean boolB = other.getBool();
+                if (boolA == boolB) {
+                    return 0;
+                }
+                return boolB ? -1 : 1;
+            case Type.Int:
+                long intA = getInt();
+                long intB = other.getInt();
+                if (intA == intB) {
+                    return 0;
+                }
+                return intA < intB ? -1 : 1;
+            case Cell.Type.Float:
+                double floatA = getFloat();
+                double floatB = other.getFloat();
+                if (floatA == floatB) {
+                    return 0;
+                }
+                return floatA < floatB ? -1 : 1;
+            case Cell.Type.Str:
+                return getStr().compareTo(other.getStr());
+            default:
+                return getTime().compareTo(other.getTime());
+        }
+    }
+
+    @Override
     public int hashCode() {
         int hash = 7;
         hash = 29 * hash + Objects.hashCode(this.type);
@@ -114,7 +148,7 @@ public class Cell {
         }
         return Objects.equals(this.value, other.value);
     }
-    
+
     @Override
     public String toString() {
         switch (type) {

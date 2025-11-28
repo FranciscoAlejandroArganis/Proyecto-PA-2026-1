@@ -4,7 +4,7 @@
  */
 package com.pa.consumers;
 
-import com.pa.reviews.UniqueCounter;
+import com.pa.reviews.Counter;
 import com.pa.table.Cell;
 import com.pa.table.Header;
 import com.pa.table.Row;
@@ -17,13 +17,13 @@ import java.util.function.Consumer;
 public class Tally implements Consumer<Row> {
 
     private Header colsToTally;
-    private UniqueCounter<Cell>[] counters;
+    private Counter<Cell>[] counters;
     
     public Tally(Header colsToTally){
         this.colsToTally = colsToTally;
-        counters = new UniqueCounter[colsToTally.size()];
+        counters = new Counter[colsToTally.size()];
         for (int i = 0; i < counters.length; i ++){
-            counters[i] = new UniqueCounter<>();
+            counters[i] = new Counter<>();
         }
     }
     
@@ -36,7 +36,7 @@ public class Tally implements Consumer<Row> {
         }
     }
     
-    public UniqueCounter<Cell>[] getCounters(){
+    public Counter<Cell>[] getCounters(){
         return counters;
     }
     

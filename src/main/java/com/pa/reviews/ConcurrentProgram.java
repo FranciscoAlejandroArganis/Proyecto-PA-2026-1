@@ -4,16 +4,14 @@
  */
 package com.pa.reviews;
 
-import com.pa.table.Header;
-
 /**
  *
  * @author francisco-alejandro
  */
 public class ConcurrentProgram extends Program {
 
-    public ConcurrentProgram(String dataset, String tempDir, String filtered, String results, Header colsToTally, int numFrags) {
-        super(dataset, tempDir, filtered, results, colsToTally, numFrags);
+    public ConcurrentProgram(FilesInfo filesInfo, int numFrags, AnalysisInfo analysisInfo) {
+        super(filesInfo, numFrags, analysisInfo);
     }
 
     @Override

@@ -4,6 +4,9 @@
  */
 package com.pa.table;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  *
  * @author francisco-alejandro
@@ -16,6 +19,11 @@ public class Row {
     public Row(Header header) {
         this.header = header;
         cells = new Cell[header.size()];
+    }
+    
+    public Row(Header header, Cell[] cells){
+        this.header = header;
+        this.cells = cells;
     }
 
     public Header getHeader() {
@@ -51,6 +59,32 @@ public class Row {
             sb.append(cells[i]);
         }
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 89 * hash + Objects.hashCode(this.header);
+        hash = 89 * hash + Arrays.deepHashCode(this.cells);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Row other = (Row) obj;
+        if (!Objects.equals(this.header, other.header)) {
+            return false;
+        }
+        return Arrays.deepEquals(this.cells, other.cells);
     }
 
 }
