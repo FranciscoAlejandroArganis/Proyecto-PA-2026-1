@@ -5,23 +5,21 @@
 package com.pa.table;
 
 /**
- *
+ * Excepción que ocurre cuando el tipo del valor de una celda no es adecuado
  * @author francisco-alejandro
  */
 public class CellTypeMismatchException extends RuntimeException {
 
     /**
-     * Creates a new instance of <code>CellTypeMismatchException</code> without
-     * detail message.
+     * Construye un nuevo ejemplar de <code>CellTypeMismatchException</code> sin mensaje
      */
     public CellTypeMismatchException() {
     }
 
     /**
-     * Constructs an instance of <code>CellTypeMismatchException</code> with the
-     * specified detail message.
+     * Construye un nuevo ejemplar de <code>CellTypeMismatchException</code> con el mensaje especificado
      *
-     * @param msg the detail message.
+     * @param msg el mensaje
      */
     public CellTypeMismatchException(String msg) {
         super(msg);

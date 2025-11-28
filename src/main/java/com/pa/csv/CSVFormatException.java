@@ -5,23 +5,21 @@
 package com.pa.csv;
 
 /**
- *
+ * Excepción que ocurren cuando el formato de un registro de un csv no es adecuado
  * @author francisco-alejandro
  */
 public class CSVFormatException extends RuntimeException {
 
     /**
-     * Creates a new instance of <code>CSVFormatException</code> without detail
-     * message.
+     * Construye un nuevo ejemplar de <code>CSVFormatException</code> sin mensaje
      */
     public CSVFormatException() {
     }
 
     /**
-     * Constructs an instance of <code>CSVFormatException</code> with the
-     * specified detail message.
+     * Construye un nuevo ejemplar de <code>CSVFormatException</code> con el mensaje especificado
      *
-     * @param msg the detail message.
+     * @param msg el mensaje
      */
     public CSVFormatException(String msg) {
         super(msg);

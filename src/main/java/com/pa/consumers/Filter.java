@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 /**
- *
+ * Representa la operación de escribir las filas filtradas
  * @author francisco-alejandro
  */
 public class Filter implements Consumer<Row> {
@@ -20,11 +20,20 @@ public class Filter implements Consumer<Row> {
     private SelectFromWhere query;
     private BufferedWriter writer;
     
+    /**
+     * Construye una nueva operación
+     * @param query es la consultada usada para filtrar
+     * @param writer es el escritor usado para escribir las filas
+     */
     public Filter(SelectFromWhere query, BufferedWriter writer){
         this.query = query;
         this.writer = writer;
     }
 
+    /**
+     * Escribe la fila resultante de la consulta si no es <code>null</code>
+     * @param row es la fila que se está procesando
+     */
     @Override
     public void accept(Row row) {
         row = query.apply(row);

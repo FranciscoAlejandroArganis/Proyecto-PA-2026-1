@@ -8,8 +8,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- *
+ * Iterador de las tuplas de un producto cartesino
  * @author francisco-alejandro
+ * @param <T> es el tipo de los elementos en los conjuntos del producto cartesiano
  */
 public class CartesianProductIterator<T> implements Iterator<T[]> {
 
@@ -17,6 +18,10 @@ public class CartesianProductIterator<T> implements Iterator<T[]> {
     private int[] indices;
     private boolean done;
 
+    /**
+     * Construye un nuevo iterador a partir de los conjuntos especificados
+     * @param sets es un arreglo donde cada entrada es un arreglo con un conjunto incluido en el producto cartesiano
+     */
     public CartesianProductIterator(T[][] sets) {
         this.sets = sets;
         indices = new int[sets.length];
@@ -30,11 +35,19 @@ public class CartesianProductIterator<T> implements Iterator<T[]> {
         }
     }
 
+    /**
+     * Determina si hay otra tupla en el producto cartesiano
+     * @return <code>true</code> si y solo si hay otra tupla en el producto cartesiano
+     */
     @Override
     public boolean hasNext() {
         return !done;
     }
 
+    /**
+     * Regresa la siguiente tupla en el producto cartesiano
+     * @return un arreglo con los valores de la siguiente tupla en el producto cartesiano
+     */
     @Override
     public T[] next() {
         T[] tuple = Arrays.copyOf(sets[0], sets.length);

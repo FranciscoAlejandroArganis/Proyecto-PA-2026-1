@@ -12,11 +12,14 @@ import java.util.Scanner;
 import java.util.function.Predicate;
 
 /**
- *
+ * Clase que solicita al usuario y lee una consulta por la entrada estándar
  * @author francisco-alejandro
  */
 public class QueryReader {
 
+    /**
+     * Tipo de operador del criterio de búsqueda de la consulta
+     */
     public enum Operator {
         LESS,
         LESS_OR_EQUAL,
@@ -32,10 +35,18 @@ public class QueryReader {
     private Cell value;
     private Operator op;
     
+    /**
+     * Construye un nuevo lector de consultas
+     * @param header es la cabecera de los datos sobre los que se va a aplicar la consulta
+     */
     public QueryReader(Header header){
         this.header = header;
     }
 
+    /**
+     * Regresa la consulta ingresada por el usuario
+     * @return la consulta ingresada por el usuario
+     */
     public SelectFromWhere readQuery() {
         try (Scanner sc = new Scanner(System.in).useDelimiter("\n")) {
             while (true) {
@@ -70,6 +81,11 @@ public class QueryReader {
         return buildQueryObject();
     }
 
+    /**
+     * Lee la lista de índices de columnas por seleccionar
+     * @param sc es el escáner usado para leer la entrada estándar
+     * @return <code>true</code> si y solo si el usuario ingresó una lista válida
+     */
     private boolean readIndexList(Scanner sc) {
         try {
             String input = sc.next();
@@ -97,6 +113,11 @@ public class QueryReader {
         return true;
     }
 
+    /**
+     * Lee el índice de la columna del criterio de búsqueda
+     * @param sc es el escáner usado para leer la entrada estándar
+     * @return <code>true</code> si y solo si el usuario ingresó un índice válido
+     */
     private boolean readIndex(Scanner sc) {
         try {
             int index = Integer.parseInt(sc.next());
@@ -111,6 +132,11 @@ public class QueryReader {
         return true;
     }
 
+    /**
+     * Lee el operador del criterio de búsqueda
+     * @param sc es el escáner usado para leer la entrada estándar
+     * @return <code>true</code> si y solo si el usuario ingresó un operador válido
+     */
     private boolean readOperator(Scanner sc) {
         try {
             String input = sc.next();
@@ -139,6 +165,11 @@ public class QueryReader {
         return false;
     }
 
+    /**
+     * Lee el valor del criterio de búsqueda
+     * @param sc es el escáner usado para leer la entrada estándar
+     * @return <code>true</code> si y solo si el usuario ingresó un valor válido
+     */
     private boolean readValue(Scanner sc) {
         try {
             value = Cell.parseCell(sc.next(), type);
@@ -148,6 +179,10 @@ public class QueryReader {
         return true;
     }
 
+    /**
+     * Construye el objeto de la consulta
+     * @return la consulta ingresada por el usuario
+     */
     private SelectFromWhere buildQueryObject() {
         Header select = header.subset(indexList);
         Header from = header;

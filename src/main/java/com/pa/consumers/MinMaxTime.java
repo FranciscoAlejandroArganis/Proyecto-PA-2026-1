@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.function.Consumer;
 
 /**
- *
+ * Representa una operación de buscar el tiempo mínimo y máximo de una columna
  * @author francisco-alejandro
  */
 public class MinMaxTime implements Consumer<Row>{
@@ -18,10 +18,18 @@ public class MinMaxTime implements Consumer<Row>{
     private LocalDateTime max;
     private int timeColIndex;
 
+    /**
+     * Construye una nueva operación
+     * @param timeColIndex es el índice de la columna para la que se busca el mínimo y máximo
+     */
     public MinMaxTime(int timeColIndex) {
         this.timeColIndex = timeColIndex;
     }
     
+    /**
+     * Actualiza el mínimo y/o máximo si es que se encuentra un tiempo menor y/o mayor en la fila
+     * @param row es la fila que se está procesando
+     */
     @Override
     public void accept(Row row) {
         LocalDateTime time = row.getCell(timeColIndex).getTime();
@@ -33,10 +41,18 @@ public class MinMaxTime implements Consumer<Row>{
         }
     }
 
+    /**
+     * Regresa el tiempo mínimo encontrado
+     * @return el tiempo mínimo encontrado
+     */
     public LocalDateTime getMin() {
         return min;
     }
 
+    /**
+     * Regresa el tiempo máximo encontrado
+     * @return el tiempo máximo encontrado
+     */
     public LocalDateTime getMax() {
         return max;
     }

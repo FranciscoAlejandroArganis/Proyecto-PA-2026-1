@@ -11,11 +11,14 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- *
+ * Interpreta cadenas como registros en un archivo csv, separando los campos del registro por comas
  * @author francisco-alejandro
  */
 public class CSVParser implements Iterator<String[]> {
 
+    /**
+     * Estado del autómata finito
+     */
     private enum State {
         WHITE_SPACE_LEFT,
         WHITE_SPACE_RIGHT,
@@ -32,12 +35,20 @@ public class CSVParser implements Iterator<String[]> {
     private int i, j;
     boolean done;
 
+    /**
+     * Construye un nuevo parser para el lector especificado
+     * @param reader el lector que provee cadenas al parser
+     */
     public CSVParser(BufferedReader reader) {
         this.reader = reader;
         sb = new StringBuilder();
         values = new ArrayList<>();
     }
 
+    /**
+     * Determina si se puede obtener otro registro del lector
+     * @return <code>true</code> si y solo si el parser puede regresar otro registro
+     */
     @Override
     public boolean hasNext() {
         try {
@@ -63,11 +74,18 @@ public class CSVParser implements Iterator<String[]> {
         }
     }
 
+    /**
+     * Regresa el siguiente registro obtenido del lector
+     * @return un arreglo con los campos del registro que fueron separados por comas
+     */
     @Override
     public String[] next() {
         return values.toArray(new String[0]);
     }
 
+    /**
+     * Reinicia el estado del autómata
+     */
     private void reset() {
         state = State.WHITE_SPACE_LEFT;
         sb.delete(0, sb.length());
@@ -77,6 +95,9 @@ public class CSVParser implements Iterator<String[]> {
         j = 0;
     }
 
+    /**
+     * Procesa la siguiente línea obtenida del lector usando un autómata finito
+     */
     private void processLine() {
         while (true) {
             switch (state) {
@@ -108,6 +129,10 @@ public class CSVParser implements Iterator<String[]> {
         }
     }
 
+    /**
+     * Procesa un caracter cuando el autómata está en el estado <code>WHITE_SPACE_LEFT</code>
+     * @return <code>true</code> si y solo si se alcanzó el final de la línea
+     */
     private boolean whiteSpaceLeft() {
         if (j >= line.length()) {
             values.add("");
@@ -129,6 +154,10 @@ public class CSVParser implements Iterator<String[]> {
         return false;
     }
 
+    /**
+     * Procesa un caracter cuando el autómata está en el estado <code>WHITE_SPACE_RIGHT</code>
+     * @return <code>true</code> si y solo si se alcanzó el final de la línea
+     */
     private boolean whiteSpaceRight() {
         if (j >= line.length()) {
             done = true;
@@ -144,6 +173,10 @@ public class CSVParser implements Iterator<String[]> {
         return false;
     }
 
+    /**
+     * Procesa un caracter cuando el autómata está en el estado <code>OPENING_QUOTATION</code>
+     * @return <code>true</code> si y solo si se alcanzó el final de la línea
+     */
     private boolean openingQuotation() {
         if (j >= line.length()) {
             sb.append(line.substring(i));
@@ -159,6 +192,10 @@ public class CSVParser implements Iterator<String[]> {
         return false;
     }
 
+    /**
+     * Procesa un caracter cuando el autómata está en el estado <code>CLOSING_QUOTATION</code>
+     * @return <code>true</code> si y solo si se alcanzó el final de la línea
+     */
     private boolean closingQuotation() {
         if (j >= line.length()) {
             sb.append(line.substring(i, line.length() - 1));
@@ -187,6 +224,10 @@ public class CSVParser implements Iterator<String[]> {
         return false;
     }
 
+    /**
+     * Procesa un caracter cuando el autómata está en el estado <code>RAW_VALUE</code>
+     * @return <code>true</code> si y solo si se alcanzó el final de la línea
+     */
     private boolean rawValue() {
         if (j >= line.length()) {
             values.add(line.substring(i));

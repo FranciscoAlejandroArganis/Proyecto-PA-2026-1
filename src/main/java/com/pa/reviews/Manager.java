@@ -4,25 +4,29 @@
  */
 package com.pa.reviews;
 
+import com.pa.util.Pair;
+import com.pa.util.Counter;
 import com.pa.multithread.AbstractManager;
-import com.pa.stats.Accumulator;
 import com.pa.table.Cell;
 import com.pa.table.Row;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- *
+ * Manager para el procesamiento en el programa concurrente
  * @author francisco-alejandro
  */
 public class Manager extends AbstractManager {
 
     private Program program;
     private Worker[] workers;
-    private Accumulator acc;
     private int numCollected;
     private boolean firstPassComplete;
 
+    /**
+     * Construye un nuevo manager
+     * @param program es el programa en donde se usa el manager
+     */
     public Manager(Program program) {
         this.program = program;
         workers = new Worker[program.getNumFrags()];
@@ -35,11 +39,20 @@ public class Manager extends AbstractManager {
         firstPassComplete = false;
     }
 
+    /**
+     * Regresa el worker con el identificador especificado
+     * @param id es el identificador del worker
+     * @return el worker con identificador <code>id</code>
+     */
     @Override
     public Worker getWorker(int id) {
         return workers[id];
     }
 
+    /**
+     * Se manda a llamar cuando un worker termina su participación y ya no entregará más trabajo, aún cuando lo tuviera asignado
+     * @param id el identificador del worker que deja de participar
+     */
     @Override
     public void dismiss(int id) {
         synchronized (this) {
@@ -47,6 +60,11 @@ public class Manager extends AbstractManager {
         }
     }
 
+    /**
+     * Se manda a llamar cuando un worker solicita trabajo al manager. Asigna trabajo al worker con identificador <code>id</code>.
+     * @param id el identificador del worker que hace la solicitud.
+     * @return <code>true</code> si y solo si se asignó trabajo
+     */
     @Override
     public boolean assign(int id) {
         Worker worker = workers[id];
@@ -70,13 +88,17 @@ public class Manager extends AbstractManager {
         }
     }
 
+    /**
+     * Se manda a llamar cuando un worker reporta que ha completado su trabajo asignado
+     * @param id el identificador del worker que hace el reporte
+     */ 
     @Override
     public void collect(int id) {
         Worker worker = workers[id];
         switch (worker.getCurrentTask()) {
             case Worker.Task.FIRST_PASS:
                 synchronized (this) {
-                    Counter<Cell>[] counters = worker.getCounters();
+                    Counter<Cell>[] counters = worker.getUniqueCounters();
                     for (int j = 0; j < counters.length; j++) {
                         for (Map.Entry<Cell, Long> entry : counters[j].getMap().entrySet()) {
                             program.getUniqueCounters()[j].increase(entry.getKey(), entry.getValue());
@@ -103,7 +125,7 @@ public class Manager extends AbstractManager {
                 break;
             case Worker.Task.SECOND_PASS:
                 synchronized (this) {
-                    Counter<Pair<Row, Integer>> counter = worker.getCounter();
+                    Counter<Pair<Row, Integer>> counter = worker.getBoolCounter();
                     for (Row rep : program.getGroupReps()) {
                         for (int j = 0; j < program.getAnalysisInfo().getNumSegments(); j++) {
                             Pair<Row, Integer> pair = new Pair<>(rep, j);
@@ -119,6 +141,10 @@ public class Manager extends AbstractManager {
 
     }
 
+    /**
+     * Regresa el programa del manager
+     * @return el programa del manager
+     */
     public Program getProgram() {
         return program;
     }

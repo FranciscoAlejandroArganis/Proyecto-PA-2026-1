@@ -13,17 +13,19 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- *
+ * Clase para la manipulación de archivos
  * @author francisco-alejandro
  */
 public class FileUtils {
 
+    /**
+     * Constructor privado para evitar la creación de objetos de la clase
+     */
     private FileUtils() {
     }
 
     /**
      * Cuenta la cantidad de líneas en un archivo
-     *
      * @param file es un archivo de texto
      * @return la cantidad de líneas en el archivo
      * @throws IOException
@@ -40,7 +42,6 @@ public class FileUtils {
 
     /**
      * Separa las líneas de un archivo en múltiples fragmentos
-     *
      * @param file es un archivo de texto
      * @param dir es el directorio donde se escriben los fragmentos
      * @param totalLines es la cantidad total de líneas del archivo
@@ -73,7 +74,6 @@ public class FileUtils {
 
     /**
      * Mezcla las líneas de múltiples fragmentos en un solo archivo
-     *
      * @param file es el archivo de texto donde se escriben las líneas de los
      * fragmentos
      * @param dir es el directorio donde se encuentran los fragmentos
@@ -95,7 +95,6 @@ public class FileUtils {
 
     /**
      * Elimina recursivamente todo el contenido de un directorio o archivo
-     *
      * @param node el directorio o archivo a eliminar
      */
     public static void recursiveDelete(File node) {
@@ -109,7 +108,6 @@ public class FileUtils {
 
     /**
      * Lee las líneas de un fragmento y las escribe en el archivo mezclado
-     *
      * @param fragment es el fragmento a leer
      * @param writer es el escritor del archivo mezclado
      * @throws IOException
@@ -129,7 +127,6 @@ public class FileUtils {
 
     /**
      * Escribe las líneas de un fragmento, leidas desde el archivo a separar
-     *
      * @param fragment es el fragmento donde se escribe
      * @param reader es el lector del archivo a separar
      * @param lines es la cantidad de línea a escribir en el fragmento

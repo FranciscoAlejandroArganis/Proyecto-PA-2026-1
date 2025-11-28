@@ -5,7 +5,7 @@
 package com.pa.multithread;
 
 /**
- *
+ * Representa un worker en el patrón manager-workers
  * @author francisco-alejandro
  */
 public abstract class AbstractWorker implements Runnable {
@@ -13,6 +13,9 @@ public abstract class AbstractWorker implements Runnable {
     protected AbstractManager manager;
     protected int id;
     
+    /**
+     * Ejecuta el código del worker
+     */
     @Override
     public void run(){
         while(manager.assign(id)){
@@ -21,10 +24,17 @@ public abstract class AbstractWorker implements Runnable {
         }
     }
     
+    /**
+     * Regresa el identificador del worker
+     * @return el identificador del worker
+     */
     public int getId(){
         return id;
     }
     
+    /**
+     * Realiza el trabajo actualmente asignado por el manager
+     */
     public abstract void doWork();
     
 }

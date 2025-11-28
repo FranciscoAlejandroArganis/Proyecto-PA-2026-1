@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
- *
+ * Clase que procesa todos las filas de una tabla leida de un archivo y aplica una operación por cada fila.
  * @author francisco-alejandro
  */
 public class RowProcessor {
@@ -23,11 +23,21 @@ public class RowProcessor {
     private File file;
     private Header header;
 
+    /**
+     * Construye un nuevo procesador de filas
+     * @param file es el archivo de donde se leen las filas
+     * @param header es la cabecera de los datos en el archivo
+     */
     public RowProcessor(File file, Header header) {
         this.file = file;
         this.header = header;
     }
     
+    /**
+     * Inicia le procesamiento de todeas las filas en el archivo
+     * @param consumer es la operación que se realiza por cada fila leida
+     * @throws IOException 
+     */
     public void process(Consumer<Row> consumer) throws IOException{
         Row row = new Row(header);
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {

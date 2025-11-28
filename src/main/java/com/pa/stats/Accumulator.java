@@ -5,7 +5,7 @@
 package com.pa.stats;
 
 /**
- *
+ * Acumula sumas y sumas de productos de datos numéricos
  * @author francisco-alejandro
  */
 public class Accumulator {
@@ -16,7 +16,6 @@ public class Accumulator {
 
     /**
      * Construye un nuevo acumulador para una cantidad fija de variables
-     *
      * @param numVars es la cantidad de variables del acumulador
      */
     public Accumulator(int numVars) {
@@ -26,7 +25,6 @@ public class Accumulator {
 
     /**
      * Agrega al acumulador un nuevo dato por cada variable
-     *
      * @param values es un arreglo tal que values[i] es el valor agregado de la
      * variable i
      */
@@ -45,7 +43,6 @@ public class Accumulator {
 
     /**
      * Agrega al acumulador actual todos los datos de otro acumulador
-     *
      * @param other otro acumulador con la misma cantidad de variables
      */
     public void addAll(Accumulator other) {
@@ -61,7 +58,6 @@ public class Accumulator {
     /**
      * Regresa el total acumulado de los datos agregados al acumulador de una
      * variable
-     *
      * @param i es el índice de la variable
      * @return la suma de los valores de la variable i
      */
@@ -72,7 +68,6 @@ public class Accumulator {
     /**
      * Regresa el total acumulado del producto por pares de los datos agregados
      * al acumulador de dos variables
-     *
      * @param i es el índice de la primera variable
      * @param j es el índice de la segunda variable
      * @return la suma de los productos de pares de valores de las variables i y
@@ -98,7 +93,6 @@ public class Accumulator {
 
     /**
      * Regresa la media de los datos agregados al acumulador de una variable
-     *
      * @param i es el índice de la variable
      * @return el promedio de los datos de la variable i
      */
@@ -108,7 +102,6 @@ public class Accumulator {
 
     /**
      * Regresa la varianza de los datos agregados al acumulador de una variable
-     *
      * @param i es el índice de la variable
      * @return la varianza muestral corregida de los datos de la variable i
      */
@@ -119,7 +112,6 @@ public class Accumulator {
     /**
      * Regresa la desviación estándar de los datos agregados al acumulador de
      * una variable
-     *
      * @param i es el índice de la variable
      * @return la desviación estándar muestral corregida de los datos de la
      * variable i
@@ -131,7 +123,6 @@ public class Accumulator {
     /**
      * Regresa una regresión lineal simple para los datos agregados al
      * acumulador de dos variable
-     *
      * @param i es el índice de la variable independiente
      * @param j es el índice de la variable dependiente
      * @return el resultado de una regresión lineal simple para los datos de las
@@ -151,7 +142,6 @@ public class Accumulator {
 
     /**
      * Regresa la cantidad de datos agregados al acumulador
-     *
      * @return la cantidad de datos de cada variable
      */
     public int getNumData() {

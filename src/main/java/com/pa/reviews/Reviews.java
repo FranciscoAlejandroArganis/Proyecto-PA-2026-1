@@ -7,6 +7,7 @@ package com.pa.reviews;
 import com.pa.table.Cell;
 import com.pa.table.Column;
 import com.pa.table.Header;
+import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -14,14 +15,19 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
- *
+ * Applicación para el procesamiento de reseñas de Steam
  * @author francisco-alejandro
  */
 public class Reviews {
-
+    
     public static final Logger LOGGER = Logger.getLogger("Reviews");
 
-    public static void main(String[] args) throws Exception {
+    /**
+     * Inicia la ejecución del programa principal
+     * @param args son los argumentos de la línea de comandos
+     * @throws IOException 
+     */
+    public static void main(String[] args) throws IOException {
         // Inicializar log
         LOGGER.setUseParentHandlers(false);
         Handler handler = new FileHandler("Reviews.log");
@@ -60,7 +66,7 @@ public class Reviews {
             }
         );
         Header colsToTally = dataHeader.subset(new String[] {"Game", "Language"});
-        String dataset = "all_reviews.csv";
+        String dataset = "sample.csv";
         String tempDir = "temp";
         String filtered = "filtered.csv";
         String results = "results.txt";

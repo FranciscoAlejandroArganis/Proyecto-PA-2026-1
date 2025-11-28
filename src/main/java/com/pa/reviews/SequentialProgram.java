@@ -4,6 +4,8 @@
  */
 package com.pa.reviews;
 
+import com.pa.util.Pair;
+import com.pa.util.Counter;
 import com.pa.consumers.CountByTime;
 import com.pa.consumers.Filter;
 import com.pa.consumers.MinMaxTime;
@@ -20,15 +22,24 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- *
+ * Representa un programa que procesa los datos de forma secuencial
  * @author francisco-alejandro
  */
 public class SequentialProgram extends Program {
 
+    /**
+     * Construye un nuevo programa secuencial
+     * @param filesInfo contiene la información de los archivos a utilizar
+     * @param numFrags es la cantidad deseada de fragmentos a generar
+     * @param analysisInfo contiene la información de los parámetros usados para el análisis de los datos
+     */
     public SequentialProgram(FilesInfo filesInfo, int numFrags, AnalysisInfo analysisInfo) {
         super(filesInfo, numFrags, analysisInfo);
     }
 
+    /**
+     * Procesa los fragmentos de forma secuencial
+     */
     @Override
     protected void frags() {
         firstPass();
@@ -36,6 +47,12 @@ public class SequentialProgram extends Program {
         secondPass();
     }
 
+    /**
+     * Realiza la primer pasada.
+     * Filtra los datos según la consulta del usuario.
+     * Cuenta valores únicos de las columnas en <code>colsToTally<c/ode>.
+     * Encuentra el tiempo mínimo y máximo de la columna en el índice <code>timeColIndex</code>
+     */
     private void firstPass() {
         for (int i = 0; i < numFrags; i++) {
             File datasetFrag = new File(filesInfo.getTempDir(), filesInfo.getDataset().getName() + i);
@@ -44,7 +61,7 @@ public class SequentialProgram extends Program {
             MinMaxTime minMaxTime = new MinMaxTime(analysisInfo.getTimeColIndex());
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(filteredFrag))) {
                 RowProcessor processor = new RowProcessor(datasetFrag, analysisInfo.getDataHeader());
-                Filter filter = new Filter(query, writer);
+                Filter filter = new Filter(userQuery, writer);
                 processor.process(filter.andThen(tally).andThen(minMaxTime));
             } catch (IOException e) {
 
@@ -66,12 +83,29 @@ public class SequentialProgram extends Program {
         }
     }
 
+    /**
+     * Realiza la segunda pasada.
+     * Cuenta la cantidad de filas tales que el valor de su columna en el índce <code>boolColIndex</code> es verdadero, por cada uno de los grupos formados.
+     */
     private void secondPass() {
         for (int i = 0; i < numFrags; i++) {
             File datasetFrag = new File(filesInfo.getTempDir(), filesInfo.getDataset().getName() + i);
-            SelectFromWhere selGroupCols = analysisInfo.selGroupCols();
-            SegmentedTimePeriod period = new SegmentedTimePeriod(minTime, maxTime, analysisInfo.getNumSegments());
-            CountByTime countByTime = new CountByTime(selGroupCols, period, groupReps, analysisInfo.getTimeColIndex());
+            SelectFromWhere selGroupCols = new SelectFromWhere(
+                analysisInfo.getColsToTally(),
+                analysisInfo.getDataHeader(),
+                row -> row.getCell(analysisInfo.getBoolColIndex()).getBool()
+            );
+            SegmentedTimePeriod period = new SegmentedTimePeriod(
+                minTime,
+                maxTime,
+                analysisInfo.getNumSegments()
+            );
+            CountByTime countByTime = new CountByTime(
+                selGroupCols,
+                period,
+                groupReps,
+                analysisInfo.getTimeColIndex()
+            );
             try {
                 RowProcessor processor = new RowProcessor(datasetFrag, analysisInfo.getDataHeader());
                 processor.process(countByTime);

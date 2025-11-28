@@ -8,7 +8,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 /**
- *
+ * Representa un periodo de tiempo divido en segmentos consecutivos
  * @author francisco-alejandro
  */
 public class SegmentedTimePeriod {
@@ -18,6 +18,12 @@ public class SegmentedTimePeriod {
     private Duration segmentDuration;
     private int numSegments;
 
+    /**
+     * Construye un nuevo periodo
+     * @param start es el tiempo donde incia el periodo
+     * @param end es el tiempo donde termina el periodo
+     * @param numSegments es el número de segmentos del periodo
+     */
     public SegmentedTimePeriod(LocalDateTime start, LocalDateTime end, int numSegments) {
         this.start = start;
         this.end = end;
@@ -25,6 +31,11 @@ public class SegmentedTimePeriod {
         this.numSegments = numSegments;
     }
 
+    /**
+     * Determina el índice del segmento al que pertence un tiempo
+     * @param time es el tiempo del cual se busca determinar su periodo
+     * @return el índice del segmento al que pertenece <code>time</code> o -1 si está fuera del periodo
+     */
     public int segmentOf(LocalDateTime time) {
         if (time.equals(end)){
             return numSegments - 1;

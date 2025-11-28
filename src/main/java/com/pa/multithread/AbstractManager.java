@@ -5,7 +5,7 @@
 package com.pa.multithread;
 
 /**
- *
+ * Representa un manager en el patrón manager-workers
  * @author francisco-alejandro
  */
 public abstract class AbstractManager {
@@ -13,6 +13,9 @@ public abstract class AbstractManager {
     protected boolean useVirtualThreads;
     protected Thread[] threads;
     
+    /**
+     * Inicia la ejecución del trabajo y espera hasta que todos los hilos terminan
+     */
     public void start() {
         Thread.Builder builder = useVirtualThreads ? Thread.ofVirtual() : Thread.ofPlatform();
         for (int i = 0; i < threads.length; i++) {
@@ -28,12 +31,30 @@ public abstract class AbstractManager {
         }
     }
     
+    /**
+     * Regresa el worker con el identificador especificado
+     * @param id es el identificador del worker
+     * @return el worker con identificador <code>id</code>
+     */
     public abstract AbstractWorker getWorker(int id);
     
+    /**
+     * Se manda a llamar cuando un worker solicita trabajo al manager. Asigna trabajo al worker con identificador <code>id</code>.
+     * @param id el identificador del worker que hace la solicitud.
+     * @return <code>true</code> si y solo si se asignó trabajo
+     */
     public abstract boolean assign(int id);
     
+    /**
+     * Se manda a llamar cuando un worker reporta que ha completado su trabajo asignado
+     * @param id el identificador del worker que hace el reporte
+     */    
     public abstract void collect(int id);
     
+    /**
+     * Se manda a llamar cuando un worker termina su participación y ya no entregará más trabajo, aún cuando lo tuviera asignado
+     * @param id el identificador del worker que deja de participar
+     */
     public abstract void dismiss(int id);
     
 }
