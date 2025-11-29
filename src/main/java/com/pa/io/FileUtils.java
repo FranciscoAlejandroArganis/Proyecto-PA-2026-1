@@ -47,7 +47,7 @@ public class FileUtils {
      * @param totalLines es la cantidad total de líneas del archivo
      * @param fragLines es la cantidad de líneas de cada fragmento
      * @param prefix es el prefijo con el que son nombrados los fragmentos
-     * @returns la cantidad de fragmentos escritos
+     * @return la cantidad de fragmentos escritos
      * @throws IOException
      */
     public static int splitLines(File file, File dir, long totalLines, long fragLines, String prefix) throws IOException {

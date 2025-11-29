@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.pa.consumers;
+package com.pa.reviews.consumers;
 
 import com.pa.table.Row;
 import java.time.LocalDateTime;
@@ -14,8 +14,19 @@ import java.util.function.Consumer;
  */
 public class MinMaxTime implements Consumer<Row>{
     
+    /**
+     * Mínimo tiempo encontrado hasta el momento
+     */
     private LocalDateTime min;
+    
+    /**
+     * Máximo tiempo encontrado hasta el momento
+     */
     private LocalDateTime max;
+    
+    /**
+     * Índice de la columna de donde se obtiene el valor del tiempo
+     */
     private int timeColIndex;
 
     /**

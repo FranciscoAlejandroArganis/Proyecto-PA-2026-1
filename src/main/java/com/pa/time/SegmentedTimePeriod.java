@@ -13,9 +13,24 @@ import java.time.LocalDateTime;
  */
 public class SegmentedTimePeriod {
 
+    /**
+     * Tiempo donde incia el periodo
+     */
     private LocalDateTime start;
+    
+    /**
+     * Tiempo donde termina el periodo
+     */
     private LocalDateTime end;
+    
+    /**
+     * Duración del segmento
+     */
     private Duration segmentDuration;
+    
+    /**
+     * Cantidad de segmentos en los que se divide el periodo
+     */
     private int numSegments;
 
     /**

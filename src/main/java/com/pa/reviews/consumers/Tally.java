@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.pa.consumers;
+package com.pa.reviews.consumers;
 
 import com.pa.util.Counter;
 import com.pa.table.Cell;
@@ -16,7 +16,14 @@ import java.util.function.Consumer;
  */
 public class Tally implements Consumer<Row> {
 
+    /**
+     * Cabecera que define las columna de las que se cuentan los valores únicos
+     */
     private Header colsToTally;
+    
+    /**
+     * Arreglo de contadores de valores de cada columna en <code>colsToTally</code>
+     */
     private Counter<Cell>[] counters;
     
     /**

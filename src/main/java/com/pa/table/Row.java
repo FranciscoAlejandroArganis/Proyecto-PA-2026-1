@@ -13,7 +13,14 @@ import java.util.Objects;
  */
 public class Row {
 
+    /**
+     * Cabecera de la tabla a la que pertenece la fila
+     */
     private Header header;
+    
+    /**
+     * Arreglo de celdas en la fila
+     */
     private Cell[] cells;
 
     /**

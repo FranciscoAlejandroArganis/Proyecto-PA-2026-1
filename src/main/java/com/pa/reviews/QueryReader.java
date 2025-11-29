@@ -28,11 +28,34 @@ public class QueryReader {
         GREATER
     }
 
+    /**
+     * Cabecera del conjunto de datos
+     */
     private Header header;
+    
+    /**
+     * Arreglo con la lista de índices de las columnas a seleccionar
+     */
     private int[] indexList;
+    
+    /**
+     * Índice de la columna del criterio de búsqueda
+     */
     private int index;
+    
+    /**
+     * Tipo de la columna del criterio de búsqueda
+     */
     private Cell.Type type;
+    
+    /**
+     * Valor del criterio de búsqueda
+     */
     private Cell value;
+    
+    /**
+     * Operador del criterio de búsqueda
+     */
     private Operator op;
     
     /**

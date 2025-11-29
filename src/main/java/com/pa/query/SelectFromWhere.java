@@ -14,6 +14,9 @@ import java.util.function.Predicate;
  */
 public class SelectFromWhere extends SelectFrom {
 
+    /**
+     * Predicado para filtrar las filas de la tabla objetivo
+     */
     protected Predicate<Row> where;
 
     /**

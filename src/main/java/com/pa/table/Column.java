@@ -10,7 +10,14 @@ package com.pa.table;
  */
 public class Column {
 
+    /**
+     * Nombre de la columna
+     */
     private String name;
+    
+    /**
+     * Tipo de datos de la columna
+     */
     private Cell.Type type;
 
     /**

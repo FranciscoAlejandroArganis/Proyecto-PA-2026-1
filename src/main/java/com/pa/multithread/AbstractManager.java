@@ -10,7 +10,14 @@ package com.pa.multithread;
  */
 public abstract class AbstractManager {
     
+    /**
+     * Indica si se usan hilos virtuales o de plataforma
+     */
     protected boolean useVirtualThreads;
+    
+    /**
+     * Arreglo de los hilos correspondientes a los workers
+     */
     protected Thread[] threads;
     
     /**

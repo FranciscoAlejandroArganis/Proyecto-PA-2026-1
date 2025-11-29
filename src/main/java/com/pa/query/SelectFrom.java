@@ -14,7 +14,14 @@ import java.util.function.Function;
  */
 public class SelectFrom implements Function<Row, Row> {
 
+    /**
+     * Columnas seleccionadas en la tabla resultante
+     */
     protected Header select;
+    
+    /**
+     * Columnas de la tabla objetivo
+     */
     protected Header from;
 
     /**

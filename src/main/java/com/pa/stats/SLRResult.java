@@ -10,8 +10,19 @@ package com.pa.stats;
  */
 public class SLRResult {
 
+    /**
+     * Pendiente de la recta ajustada
+     */
     private double slope;
+    
+    /**
+     * Ordenada al origen de la recta ajustada
+     */
     private double intercept;
+    
+    /**
+     * Coeficiente de correlación de la recta ajustada
+     */
     private double correlationCoefficient;
 
     /**

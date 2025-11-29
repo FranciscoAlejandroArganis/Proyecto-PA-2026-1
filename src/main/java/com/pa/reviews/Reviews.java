@@ -20,10 +20,13 @@ import java.util.logging.SimpleFormatter;
  */
 public class Reviews {
     
+    /**
+     * Logger usado durante la ejecución de la apliación
+     */
     public static final Logger LOGGER = Logger.getLogger("Reviews");
 
     /**
-     * Inicia la ejecución del programa principal
+     * Inicia la ejecución de la aplicación
      * @param args son los argumentos de la línea de comandos
      * @throws IOException 
      */
@@ -36,7 +39,6 @@ public class Reviews {
         LOGGER.addHandler(handler);
 
         // Procesar el conjunto de datos
-        int numFrags = 200 * Runtime.getRuntime().availableProcessors();
         Header dataHeader = new Header(
             new Column[]{
                 new Column("Review id", Cell.Type.Int),
@@ -74,9 +76,13 @@ public class Reviews {
         int maxUniques = 8;
         int timeColIndex = 12;
         int boolColIndex = 14;
-        int numSegments = 1000;
+        int numSegments = 100;
+        int numCores = Runtime.getRuntime().availableProcessors();
+        int numFrags = 200 * numCores;
+        System.out.println("Unidades de procesamiento detectadas: " + numCores);
+        System.out.println("Número de fragmentos: " + numFrags);
         Program.AnalysisInfo analysisInfo = new Program.AnalysisInfo(dataHeader, colsToTally, maxUniques, timeColIndex, boolColIndex, numSegments);
-        Program program = new SequentialProgram(filesInfo, numFrags, analysisInfo);
+        Program program = new ConcurrentProgram(filesInfo, numFrags, analysisInfo);
         program.execute();
     }
 

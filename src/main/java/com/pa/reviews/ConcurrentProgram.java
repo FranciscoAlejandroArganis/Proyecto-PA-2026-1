@@ -18,6 +18,7 @@ public class ConcurrentProgram extends Program {
      */
     public ConcurrentProgram(FilesInfo filesInfo, int numFrags, AnalysisInfo analysisInfo) {
         super(filesInfo, numFrags, analysisInfo);
+        System.out.println("Implementación: Multihilos");
     }
 
     /**

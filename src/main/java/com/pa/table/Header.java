@@ -13,7 +13,14 @@ import java.util.Map;
  */
 public class Header {
 
+    /**
+     * Arreglo con las columnas de la cabecera
+     */
     private Column[] columns;
+    
+    /**
+     * Mapa de los nombres de las columnas a sus índices en la cabecera
+     */
     private Map<String, Integer> map;
 
     /**

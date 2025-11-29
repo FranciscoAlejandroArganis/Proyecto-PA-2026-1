@@ -6,10 +6,10 @@ package com.pa.reviews;
 
 import com.pa.util.Pair;
 import com.pa.util.Counter;
-import com.pa.consumers.CountByTime;
-import com.pa.consumers.Filter;
-import com.pa.consumers.MinMaxTime;
-import com.pa.consumers.Tally;
+import com.pa.reviews.consumers.CountByTime;
+import com.pa.reviews.consumers.Filter;
+import com.pa.reviews.consumers.MinMaxTime;
+import com.pa.reviews.consumers.Tally;
 import com.pa.multithread.AbstractWorker;
 import com.pa.query.SelectFromWhere;
 import com.pa.stats.Accumulator;
@@ -37,14 +37,40 @@ public class Worker extends AbstractWorker {
         DONE
     }
 
+    /**
+     * Tarea actual del worker
+     */
     private Task currentTask;
+    
+    /**
+     * Fragmento del conjunto de datos que procesa el worker
+     */
     private File datasetFrag;
+    
+    /**
+     * Fragmento del archivo filtrado que genera el worker
+     */
     private File filteredFrag;
+    
+    /**
+     * Programa donde se usa el worker
+     */
     private Program program;
+    
+    /**
+     * Operación de contar valores únicos aplicada por el worker
+     */
     private Tally tally;
+    
+    /**
+     * Operación de buscar tiempos mínimo y máximo aplicada por el worker
+     */
     private MinMaxTime minMaxTime;
+    
+    /**
+     * Operación de contar filas verdaderas por segmentos de tiempo aplicada por el worker
+     */
     private CountByTime countByTime;
-    private Accumulator acc;
 
     /**
      * Construye un nuevo worker
@@ -92,7 +118,7 @@ public class Worker extends AbstractWorker {
             Filter filter = new Filter(program.getUserQuery(), writer);
             processor.process(filter.andThen(tally).andThen(minMaxTime));
         } catch (IOException e) {
-
+            Reviews.LOGGER.severe("No se tiene acceso a los archivos temporales: " + datasetFrag.getName() + ", " + filteredFrag.getName());
         }
     }
 
@@ -120,7 +146,7 @@ public class Worker extends AbstractWorker {
             RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
             processor.process(countByTime);
         } catch (IOException e) {
-
+            Reviews.LOGGER.severe("No se puede leer el archivo temporal: " + datasetFrag.getName());
         }
     }
 

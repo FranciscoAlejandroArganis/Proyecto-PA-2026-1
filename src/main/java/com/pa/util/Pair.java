@@ -14,7 +14,14 @@ import java.util.Objects;
  */
 public class Pair <A,B> {
     
+    /**
+     * Primer objeto en el par
+     */
     private A first;
+    
+    /**
+     * Segundo objeto en el par
+     */
     private B second;
 
     /**
@@ -53,7 +60,7 @@ public class Pair <A,B> {
 
     /**
      * Asigna el segundo objeto en el par
-     * @param first el nuevo valor del segundo objeto
+     * @param second el nuevo valor del segundo objeto
      */
     public void setSecond(B second) {
         this.second = second;

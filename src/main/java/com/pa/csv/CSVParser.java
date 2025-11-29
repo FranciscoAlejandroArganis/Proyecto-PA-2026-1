@@ -27,12 +27,44 @@ public class CSVParser implements Iterator<String[]> {
         RAW_VALUE
     }
 
+    /**
+     * Lector usado para leer líneas del archivo csv
+     */
     private BufferedReader reader;
+    
+    /**
+     * Constructor de cadenas usado para campos multilínea
+     */
     private StringBuilder sb;
+    
+    /**
+     * La línea actual que se procesa
+     */
     private String line;
+    
+    /**
+     * Lista de campos del registro actual
+     */
     private List<String> values;
+    
+    /**
+     * Estado del autómata finito
+     */
     private State state;
-    private int i, j;
+    
+    /**
+     * Posición de inicio del último valor de un campo
+     */
+    private int i;
+    
+    /**
+     * Posición del caracter que lee el autómata
+     */
+    private int j;
+    
+    /**
+     * Indica si el autómata ha terminado de procesar un registro del archivo csv
+     */
     boolean done;
 
     /**

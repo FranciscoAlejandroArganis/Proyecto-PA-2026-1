@@ -18,9 +18,24 @@ import java.util.Map;
  */
 public class Manager extends AbstractManager {
 
+    /**
+     * Programa en el que se usa el manager
+     */
     private Program program;
+    
+    /**
+     * Arreglo de workers
+     */
     private Worker[] workers;
+    
+    /**
+     * Cuenta de los workers que han reportado sus resultados de la primera pasada
+     */
     private int numCollected;
+    
+    /**
+     * Indica si todos los workers han completado la primera pasada
+     */
     private boolean firstPassComplete;
 
     /**
@@ -55,6 +70,7 @@ public class Manager extends AbstractManager {
      */
     @Override
     public void dismiss(int id) {
+        Reviews.LOGGER.warning("Hilo " + id + " interruptido");
         synchronized (this) {
             program.setNumFrags(program.getNumFrags() - 1);
         }
@@ -79,7 +95,6 @@ public class Manager extends AbstractManager {
                         }
                     }
                 } catch (InterruptedException e) {
-                    Reviews.LOGGER.warning("Hilo " + id + " interruptido");
                     dismiss(id);
                 }
                 return true;

@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.pa.consumers;
+package com.pa.reviews.consumers;
 
 import com.pa.query.SelectFromWhere;
 import com.pa.util.Pair;
@@ -19,10 +19,29 @@ import java.util.function.Consumer;
  */
 public class CountByTime implements Consumer<Row> {
 
+    /**
+     * Query para seleccionar los valores de de las columnas que definen el grupo
+     */
     private SelectFromWhere selGroupCols;
+    
+    /**
+     * Periodo de tiempo que se usa para la contar por segmentos
+     */
     private SegmentedTimePeriod period;
+    
+    /**
+     * Contador por cada grupo y segmento
+     */
     private Counter<Pair<Row, Integer>> counter;
+    
+    /**
+     * Conjunto de combinaciones de valores de cada grupo
+     */
     private Set<Row> groupReps;
+    
+    /**
+     * Índice de la columna de donde se obtiene el tiempo
+     */
     private int timeColIndex;
 
     /**
@@ -44,7 +63,7 @@ public class CountByTime implements Consumer<Row> {
     }
 
     /**
-     * Aplica la consulta sobre la fila. Si el resultado es <code>null<code> o la combinación de valores
+     * Aplica la consulta sobre la fila. Si el resultado es <code>null</code> o la combinación de valores
      * seleccionados no están en <code>groupReps</code> se aumneta la cuenta de
      * los mismos.
      *

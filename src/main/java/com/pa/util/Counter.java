@@ -14,6 +14,9 @@ import java.util.Map;
  */
 public class Counter<T> {
 
+    /**
+     * Mapa de cada objeto a su cuenta actual
+     */
     private Map<T, Long> map;
 
     /**
@@ -33,7 +36,7 @@ public class Counter<T> {
     }
 
     /**
-     * Incrementa en <coed>increment</code> la cuenta de <code>key</code>
+     * Incrementa en <code>increment</code> la cuenta de <code>key</code>
      * @param key el objeto del que se aumenta la cuenta
      * @param increment es la cantidad que se suma al la cuenta actual
      */

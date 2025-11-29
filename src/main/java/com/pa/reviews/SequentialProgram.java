@@ -6,10 +6,10 @@ package com.pa.reviews;
 
 import com.pa.util.Pair;
 import com.pa.util.Counter;
-import com.pa.consumers.CountByTime;
-import com.pa.consumers.Filter;
-import com.pa.consumers.MinMaxTime;
-import com.pa.consumers.Tally;
+import com.pa.reviews.consumers.CountByTime;
+import com.pa.reviews.consumers.Filter;
+import com.pa.reviews.consumers.MinMaxTime;
+import com.pa.reviews.consumers.Tally;
 import com.pa.query.SelectFromWhere;
 import com.pa.table.Cell;
 import com.pa.table.Row;
@@ -35,6 +35,7 @@ public class SequentialProgram extends Program {
      */
     public SequentialProgram(FilesInfo filesInfo, int numFrags, AnalysisInfo analysisInfo) {
         super(filesInfo, numFrags, analysisInfo);
+        System.out.println("Implementación: Secuencial");
     }
 
     /**
@@ -64,7 +65,7 @@ public class SequentialProgram extends Program {
                 Filter filter = new Filter(userQuery, writer);
                 processor.process(filter.andThen(tally).andThen(minMaxTime));
             } catch (IOException e) {
-
+                Reviews.LOGGER.severe("No se tiene acceso a los archivos temporales: " + datasetFrag.getName() + ", " + filteredFrag.getName());
             }
             Counter<Cell>[] counters = tally.getCounters();
             for (int j = 0; j < counters.length; j++) {
@@ -110,6 +111,7 @@ public class SequentialProgram extends Program {
                 RowProcessor processor = new RowProcessor(datasetFrag, analysisInfo.getDataHeader());
                 processor.process(countByTime);
             } catch (IOException e) {
+                Reviews.LOGGER.severe("No se puede leer el archivo temporal: " + datasetFrag.getName());
             }
             for (Row rep : groupReps) {
                 for (int j = 0; j < analysisInfo.getNumSegments(); j++) {

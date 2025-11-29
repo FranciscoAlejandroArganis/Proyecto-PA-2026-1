@@ -15,12 +15,19 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
- * Clase que procesa todos las filas de una tabla leida de un archivo y aplica una operación por cada fila.
+ * Clase que procesa todos las filas de una tabla leida de un archivo csv y aplica una operación por cada fila.
  * @author francisco-alejandro
  */
 public class RowProcessor {
     
+    /**
+     * Archivo csv de donde se leen las filas
+     */
     private File file;
+    
+    /**
+     * Cabecera de la tabla en el archivo csv
+     */
     private Header header;
 
     /**
@@ -52,7 +59,7 @@ public class RowProcessor {
                     row.fill(values);
                     consumer.accept(row);
                 } catch (Exception e) {
-                    Reviews.LOGGER.warning("No se puede interpretar la fila del csv " + Arrays.toString(values));
+                    Reviews.LOGGER.warning("No se puede interpretar la fila del csv: " + Arrays.toString(values));
                 }
             }
         }

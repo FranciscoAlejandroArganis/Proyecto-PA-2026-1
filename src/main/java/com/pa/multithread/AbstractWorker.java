@@ -10,7 +10,14 @@ package com.pa.multithread;
  */
 public abstract class AbstractWorker implements Runnable {
     
+    /**
+     * Manager del worker
+     */
     protected AbstractManager manager;
+    
+    /**
+     * Identificador del worker
+     */
     protected int id;
     
     /**

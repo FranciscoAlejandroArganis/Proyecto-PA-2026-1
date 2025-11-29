@@ -29,14 +29,49 @@ import java.util.Set;
  */
 public abstract class Program {
 
+    /**
+     * Registro con la información de los archivos a utilizar
+     */
     protected FilesInfo filesInfo;
+    
+    /**
+     * Cantidad de fragmentos
+     */
     protected int numFrags;
+    
+    /**
+     * La consulta proporcionada por el usuario para filtrar
+     */
     protected SelectFromWhere userQuery;
+    
+    /**
+     * Registro con la información de los parámetros del análisis
+     */
     protected AnalysisInfo analysisInfo;
+    
+    /**
+     * Arreglo de contadores de valores únicos por cada columna de interés
+     */
     protected Counter<Cell>[] uniqueCounters;
+    
+    /**
+     * Conjunto de combinaciones de valores de cada grupo
+     */
     protected Set<Row> groupReps;
+    
+    /**
+     * Contador de filas verdaderas por cada grupo y segmento
+     */
     protected Counter<Pair<Row, Integer>> boolCounter;
+    
+    /**
+     * Mínimo tiempo encontrado hasta el momento
+     */
     protected LocalDateTime minTime;
+    
+    /**
+     * Máximo tiempo encontrado hasta el momento
+     */
     protected LocalDateTime maxTime;
 
     /**
@@ -77,10 +112,10 @@ public abstract class Program {
                 long fragLines = 1 + (totalLines - 1) / numFrags;
                 numFrags = FileUtils.splitLines(filesInfo.getDataset(), filesInfo.getTempDir(), totalLines, fragLines, filesInfo.getDataset().getName());
             } catch (IOException e) {
-                Reviews.LOGGER.severe("No se puede escribir los archivos en el directorio temporal");
+                Reviews.LOGGER.severe("No se puede escribir los archivos en el directorio temporal: " + filesInfo.getTempDir());
             }
         } else {
-            Reviews.LOGGER.severe("No se puede crear el directorio temporal");
+            Reviews.LOGGER.severe("No se puede crear el directorio temporal: " + filesInfo.getTempDir());
         }
     }
 
@@ -122,6 +157,7 @@ public abstract class Program {
             FileUtils.mergeLines(filesInfo.getFiltered(), filesInfo.getTempDir(), filesInfo.getFiltered().getName());
             FileUtils.recursiveDelete(filesInfo.getTempDir());
         } catch (IOException e) {
+            Reviews.LOGGER.severe("No se puede escribir en el archivo de resultados: " + filesInfo.getResults().getName());
         }
     }
 
@@ -218,7 +254,7 @@ public abstract class Program {
 
     /**
      * Regresa el tiempo mínimo encontrado
-     * @return el tiempo mínimo encontrado
+     * @return el tiempo mínimo
      */
     public LocalDateTime getMinTime() {
         return minTime;
@@ -226,23 +262,23 @@ public abstract class Program {
 
     /**
      * Asigna el tiempo mínimo encontrado
-     * @return el nuevo tiempo mínimo encontrado
+     * @param minTime el nuevo tiempo mínimo
      */
     public void setMinTime(LocalDateTime minTime) {
         this.minTime = minTime;
     }
-
+    
     /**
      * Regresa el tiempo máximo encontrado
-     * @return el tiempo máximo encontrado
+     * @return el tiempo máximo
      */
     public LocalDateTime getMaxTime() {
         return maxTime;
     }
-
+    
     /**
      * Asigna el tiempo máximo encontrado
-     * @return el nuevo tiempo máximo encontrado
+     * @param maxTime el nuevo tiempo máximo
      */
     public void setMaxTime(LocalDateTime maxTime) {
         this.maxTime = maxTime;
@@ -258,9 +294,24 @@ public abstract class Program {
      */
     public static class FilesInfo {
 
+        /**
+         * Archivo con el conjunto de datos
+         */
         private File dataset;
+        
+        /**
+         * Carpeta temporal donde se guardan los fragmentos
+         */
         private File tempDir;
+        
+        /**
+         * Archivo filtrado con los resutlados de la consulta del usuario
+         */
         private File filtered;
+        
+        /**
+         * Archivo donde se escriben los resultado del análisis
+         */
         private File results;
 
         /**
@@ -316,11 +367,34 @@ public abstract class Program {
      */
     public static class AnalysisInfo {
 
+        /**
+         * Cabecera del conjunto de datos
+         */
         private Header dataHeader;
+        
+        /**
+         * Cabecera con las columnas de las que se cuentan valores únicos
+         */
         private Header colsToTally;
+        
+        /**
+         * Cantidad máxima de valores únicos a tomar por columna para formar grupos
+         */
         private int maxUniques;
+        
+        /**
+         * Índice de la columna de donde se toma el tiempo para contar por segmentos de tiempo
+         */
         private int timeColIndex;
+        
+        /**
+         * Índice de la columna que se usa como criterio para contar por segmentos de tiempo
+         */
         private int boolColIndex;
+        
+        /**
+         * Número de segmentos de tiempo
+         */
         private int numSegments;
 
         /**

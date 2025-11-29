@@ -14,8 +14,19 @@ import java.util.Iterator;
  */
 public class CartesianProductIterator<T> implements Iterator<T[]> {
 
+    /**
+     * Conjuntos del producto cartesiano
+     */
     private T[][] sets;
+    
+    /**
+     * Índices de los elementos a tomar de cada conjunto para formar una tupla del producto cartesiano
+     */
     private int[] indices;
+    
+    /**
+     * Indica si quedan tuplan en el producto cartesiano
+     */
     private boolean done;
 
     /**

@@ -10,8 +10,19 @@ package com.pa.stats;
  */
 public class Accumulator {
 
+    /**
+     * Arreglo con las sumas acumuladas de los datos de cada variable
+     */
     private double[] single;
+    
+    /**
+     * Arreglo con las sumas acumuladas de los productos por pares de variables
+     */
     private double[] pair;
+    
+    /**
+     * Cantidad de datos en el acumulador
+     */
     private int numData;
 
     /**

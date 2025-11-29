@@ -15,7 +15,7 @@ import java.util.Objects;
 public class Cell implements Comparable<Cell> {
 
     /**
-     * Tipos que se pueden almacenar en una celda
+     * Tipos de datos que se pueden almacenar en una celda
      */
     public enum Type {
         Bool,
@@ -25,7 +25,14 @@ public class Cell implements Comparable<Cell> {
         Time
     }
 
+    /**
+     * Tipo del valor guardado en la celda
+     */
     private Type type;
+    
+    /**
+     * Valor guardado en la celda
+     */
     private Object value;
 
     /**

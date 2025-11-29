@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package com.pa.consumers;
+package com.pa.reviews.consumers;
 
 import com.pa.query.SelectFromWhere;
 import com.pa.reviews.Reviews;
@@ -17,7 +17,14 @@ import java.util.function.Consumer;
  */
 public class Filter implements Consumer<Row> {
     
+    /**
+     * Consulta del usuario
+     */
     private SelectFromWhere query;
+    
+    /**
+     * Escritor usado para escribir las filas que satisfacen la consulta
+     */
     private BufferedWriter writer;
     
     /**
