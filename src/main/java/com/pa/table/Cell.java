@@ -18,11 +18,11 @@ public class Cell implements Comparable<Cell> {
      * Tipos de datos que se pueden almacenar en una celda
      */
     public enum Type {
-        Bool,
-        Int,
-        Float,
-        Str,
-        Time
+        BOOL,
+        INT,
+        FLOAT,
+        STR,
+        TIME
     }
 
     /**
@@ -40,7 +40,7 @@ public class Cell implements Comparable<Cell> {
      * @param value el valor que tendrá la nueva celda
      */
     public Cell(boolean value) {
-        type = Type.Bool;
+        type = Type.BOOL;
         this.value = value;
     }
 
@@ -49,7 +49,7 @@ public class Cell implements Comparable<Cell> {
      * @param value el valor que tendrá la nueva celda
      */
     public Cell(long value) {
-        type = Type.Int;
+        type = Type.INT;
         this.value = value;
     }
 
@@ -58,7 +58,7 @@ public class Cell implements Comparable<Cell> {
      * @param value el valor que tendrá la nueva celda
      */
     public Cell(double value) {
-        type = Type.Float;
+        type = Type.FLOAT;
         this.value = value;
     }
 
@@ -67,7 +67,7 @@ public class Cell implements Comparable<Cell> {
      * @param value el valor que tendrá la nueva celda
      */
     public Cell(String value) {
-        type = Type.Str;
+        type = Type.STR;
         this.value = value;
     }
 
@@ -76,7 +76,7 @@ public class Cell implements Comparable<Cell> {
      * @param value el valor que tendrá la nueva celda
      */
     public Cell(LocalDateTime value) {
-        type = Type.Time;
+        type = Type.TIME;
         this.value = value;
     }
 
@@ -93,7 +93,7 @@ public class Cell implements Comparable<Cell> {
      * @return el booleano en la celda
      */
     public boolean getBool() {
-        if (type != Type.Bool) {
+        if (type != Type.BOOL) {
             throw new CellTypeMismatchException();
         }
         return (Boolean) value;
@@ -104,7 +104,7 @@ public class Cell implements Comparable<Cell> {
      * @return el entero en la celda
      */
     public long getInt() {
-        if (type != Type.Int) {
+        if (type != Type.INT) {
             throw new CellTypeMismatchException();
         }
         return (Long) value;
@@ -115,7 +115,7 @@ public class Cell implements Comparable<Cell> {
      * @return el flotante en la celda
      */
     public double getFloat() {
-        if (type != Type.Float) {
+        if (type != Type.FLOAT) {
             throw new CellTypeMismatchException();
         }
         return (Double) value;
@@ -126,7 +126,7 @@ public class Cell implements Comparable<Cell> {
      * @return la cadena en la celda
      */
     public String getStr() {
-        if (type != Type.Str) {
+        if (type != Type.STR) {
             throw new CellTypeMismatchException();
         }
         return (String) value;
@@ -137,7 +137,7 @@ public class Cell implements Comparable<Cell> {
      * @return el tiempo en la celda
      */
     public LocalDateTime getTime() {
-        if (type != Type.Time) {
+        if (type != Type.TIME) {
             throw new CellTypeMismatchException();
         }
         return (LocalDateTime) value;
@@ -154,28 +154,28 @@ public class Cell implements Comparable<Cell> {
             throw new CellTypeMismatchException();
         }
         switch (type) {
-            case Type.Bool:
+            case Type.BOOL:
                 boolean boolA = getBool();
                 boolean boolB = other.getBool();
                 if (boolA == boolB) {
                     return 0;
                 }
                 return boolB ? -1 : 1;
-            case Type.Int:
+            case Type.INT:
                 long intA = getInt();
                 long intB = other.getInt();
                 if (intA == intB) {
                     return 0;
                 }
                 return intA < intB ? -1 : 1;
-            case Cell.Type.Float:
+            case Cell.Type.FLOAT:
                 double floatA = getFloat();
                 double floatB = other.getFloat();
                 if (floatA == floatB) {
                     return 0;
                 }
                 return floatA < floatB ? -1 : 1;
-            case Cell.Type.Str:
+            case Cell.Type.STR:
                 return getStr().compareTo(other.getStr());
             default:
                 return getTime().compareTo(other.getTime());
@@ -224,16 +224,16 @@ public class Cell implements Comparable<Cell> {
     @Override
     public String toString() {
         switch (type) {
-            case Type.Bool:
+            case Type.BOOL:
                 if (getBool()) {
                     return "1";
                 }
                 return "0";
-            case Type.Int:
+            case Type.INT:
                 return Long.toString(getInt());
-            case Cell.Type.Float:
+            case Cell.Type.FLOAT:
                 return Double.toString(getFloat());
-            case Cell.Type.Str:
+            case Cell.Type.STR:
                 return '\"' + getStr().replaceAll("\"", "\"\"") + '\"';
             default:
                 return Long.toString(getTime().toEpochSecond(ZoneOffset.UTC));
@@ -248,16 +248,16 @@ public class Cell implements Comparable<Cell> {
      */
     public static Cell parseCell(String string, Type type) {
         switch (type) {
-            case Type.Bool:
+            case Type.BOOL:
                 boolean boolVal = Integer.parseInt(string) != 0;
                 return new Cell(boolVal);
-            case Cell.Type.Int:
+            case Cell.Type.INT:
                 long intVal = Long.parseLong(string);
                 return new Cell(intVal);
-            case Cell.Type.Float:
+            case Cell.Type.FLOAT:
                 double floatVal = Double.parseDouble(string);
                 return new Cell(floatVal);
-            case Cell.Type.Str:
+            case Cell.Type.STR:
                 return new Cell(string);
             default:
                 LocalDateTime timeVal = LocalDateTime.ofEpochSecond(Long.parseLong(string), 0, ZoneOffset.UTC);

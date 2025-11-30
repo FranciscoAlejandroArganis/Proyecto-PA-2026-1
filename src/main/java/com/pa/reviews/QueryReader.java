@@ -8,6 +8,9 @@ import com.pa.query.SelectFromWhere;
 import com.pa.table.Cell;
 import com.pa.table.Header;
 import com.pa.table.Row;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 import java.util.function.Predicate;
 
@@ -195,11 +198,33 @@ public class QueryReader {
      */
     private boolean readValue(Scanner sc) {
         try {
-            value = Cell.parseCell(sc.next(), type);
+            String input = sc.next();
+            switch(type){
+                case Cell.Type.BOOL:
+                    input = input.toLowerCase();
+                    if (input.equals("true")){
+                        value = new Cell(true);
+                        return true;
+                    }
+                    if (input.equals("false")){
+                        value = new Cell(false);
+                        return true;
+                    }
+                    System.out.println("Se espera true o false");
+                    break;
+                case Cell.Type.TIME:
+                    value = new Cell(LocalDateTime.parse(input));
+                    return true;
+                default:
+                    value = Cell.parseCell(input, type);
+                    return true;
+            }
+        } catch (DateTimeParseException e) {
+            System.out.println("Se espera una fecha y hora en el formato yyyy-nn-ddThh:mm:ss donde");
+            System.out.println("yyyy es el año\nnn es el mes\ndd es el día\nhh es la hora\nmm son los minutos\nss son los segundos");
         } catch (Exception e) {
-            return false;
         }
-        return true;
+        return false;
     }
 
     /**
