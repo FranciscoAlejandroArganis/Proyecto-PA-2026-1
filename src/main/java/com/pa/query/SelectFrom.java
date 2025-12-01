@@ -6,13 +6,13 @@ package com.pa.query;
 
 import com.pa.table.Header;
 import com.pa.table.Row;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Representa una consulta de la forma select from
  * @author francisco-alejandro
  */
-public class SelectFrom implements Function<Row, Row> {
+public class SelectFrom implements UnaryOperator<Row> {
 
     /**
      * Columnas seleccionadas en la tabla resultante

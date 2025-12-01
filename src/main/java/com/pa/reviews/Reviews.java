@@ -67,7 +67,7 @@ public class Reviews {
                 new Column("Steam China location", Cell.Type.STR)
             }
         );
-        Header colsToTally = dataHeader.subset(new String[] {"Game", "Language"});
+        Header groupColumns = dataHeader.subset(new String[] {"Game", "Language"});
         String dataset = "all_reviews.csv";
         String tempDir = "temp";
         String filtered = "filtered.csv";
@@ -81,7 +81,7 @@ public class Reviews {
         int numFrags = 200 * numCores;
         System.out.println("Unidades de procesamiento detectadas: " + numCores);
         System.out.println("Número de fragmentos: " + numFrags);
-        Program.AnalysisInfo analysisInfo = new Program.AnalysisInfo(dataHeader, colsToTally, maxUniques, timeColIndex, boolColIndex, numSegments);
+        Program.AnalysisInfo analysisInfo = new Program.AnalysisInfo(dataHeader, groupColumns, maxUniques, timeColIndex, boolColIndex, numSegments);
         Program program = new ConcurrentProgram(filesInfo, numFrags, analysisInfo);
         program.execute();
     }

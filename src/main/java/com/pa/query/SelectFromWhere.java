@@ -29,6 +29,16 @@ public class SelectFromWhere extends SelectFrom {
         super(select, from);
         this.where = where;
     }
+    
+    /**
+     * Construye una nueva consulta a partir de otra, agregan una condición where
+     * @param query la consulta que es extendida con la condición
+     * @param where la condición agregada
+     */
+    public SelectFromWhere(SelectFrom query, Predicate<Row> where){
+        super(query.select, query.from);
+        this.where = where;
+    }
 
     /**
      * Regresa la fila de la tabla resultante, dada la fila de la tabla objetivo

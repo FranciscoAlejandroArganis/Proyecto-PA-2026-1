@@ -4,73 +4,58 @@
  */
 package com.pa.reviews;
 
-import com.pa.util.Pair;
-import com.pa.util.Counter;
-import com.pa.reviews.consumers.CountByTime;
+import com.pa.reviews.consumers.DifferenceTimeGroup;
 import com.pa.reviews.consumers.Filter;
-import com.pa.reviews.consumers.MinMaxTime;
+import com.pa.reviews.consumers.MinMaxTimeGroup;
 import com.pa.reviews.consumers.Tally;
 import com.pa.multithread.AbstractWorker;
-import com.pa.query.SelectFromWhere;
-import com.pa.stats.Accumulator;
-import com.pa.table.Cell;
-import com.pa.table.Row;
-import com.pa.time.SegmentedTimePeriod;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 /**
  * Representa un worker para el procesamiento en el programa concurrente
+ *
  * @author francisco-alejandro
  */
 public class Worker extends AbstractWorker {
 
     /**
-     * Tipo de tarea que realiza el worker
+     * Número de la pasada que tiene asignada actualmente el worker
      */
-    public enum Task {
-        FIRST_PASS,
-        SECOND_PASS,
-        DONE
-    }
+    private int pass;
 
-    /**
-     * Tarea actual del worker
-     */
-    private Task currentTask;
-    
     /**
      * Fragmento del conjunto de datos que procesa el worker
      */
     private File datasetFrag;
-    
+
     /**
      * Fragmento del archivo filtrado que genera el worker
      */
     private File filteredFrag;
-    
+
     /**
      * Programa donde se usa el worker
      */
     private Program program;
-    
+
     /**
-     * Operación de contar valores únicos aplicada por el worker
+     * Operación local de contar valores únicos aplicada por el worker
      */
     private Tally tally;
-    
+
     /**
-     * Operación de buscar tiempos mínimo y máximo aplicada por el worker
+     * Operación local de buscar tiempos mínimo y máximo aplicada por el worker
      */
-    private MinMaxTime minMaxTime;
-    
+    private MinMaxTimeGroup minMaxTime;
+
     /**
-     * Operación de contar filas verdaderas por segmentos de tiempo aplicada por el worker
+     * Operación local de acumular diferencias por segmentos de tiempo aplicada
+     * por el worker
      */
-    private CountByTime countByTime;
+    private DifferenceTimeGroup diffTime;
 
     /**
      * Construye un nuevo worker
@@ -84,7 +69,6 @@ public class Worker extends AbstractWorker {
         this.datasetFrag = new File(program.getFilesInfo().getTempDir(), program.getFilesInfo().getDataset().getName() + id);
         this.filteredFrag = new File(program.getFilesInfo().getTempDir(), program.getFilesInfo().getFiltered().getName() + id);
         this.id = id;
-        currentTask = Task.FIRST_PASS;
     }
 
     /**
@@ -92,31 +76,31 @@ public class Worker extends AbstractWorker {
      */
     @Override
     public void doWork() {
-        switch (currentTask) {
-            case Task.FIRST_PASS:
+        switch (pass) {
+            case 1:
                 firstPass();
                 break;
-            case Task.SECOND_PASS:
+            case 2:
                 secondPass();
                 break;
+            case 3:
+                thirdPass();
+                break;
             default:
-                return;
         }
     }
 
     /**
      * Realiza la primer pasada, local al fragmento que procesa el worker.
-     * Filtra los datos según la consulta del usuario.
-     * Cuenta valores únicos de las columnas en <code>colsToTally<c/ode>.
-     * Encuentra el tiempo mínimo y máximo de la columna en el índice <code>timeColIndex</code>
+     * Filtra los datos según la consulta del usuario. Cuenta valores únicos de
+     * las columnas en <code>groupColumns<c/ode>.
      */
     private void firstPass() {
-        tally = new Tally(program.getAnalysisInfo().getColsToTally());
-        minMaxTime = new MinMaxTime(program.analysisInfo.getTimeColIndex());
+        tally = new Tally(program.getAnalysisInfo().getGroupColumns());
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filteredFrag))) {
             RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
             Filter filter = new Filter(program.getUserQuery(), writer);
-            processor.process(filter.andThen(tally).andThen(minMaxTime));
+            processor.process(filter.andThen(tally));
         } catch (IOException e) {
             Reviews.LOGGER.severe("No se tiene acceso a los archivos temporales: " + datasetFrag.getName() + ", " + filteredFrag.getName());
         }
@@ -124,78 +108,85 @@ public class Worker extends AbstractWorker {
 
     /**
      * Realiza la segunda pasada, local al fragmento que procesa el worker.
-     * Cuenta la cantidad de filas tales que el valor de su columna en el índce <code>boolColIndex</code> es verdadero, por cada uno de los grupos formados.
+     * Encuentra el mínimo y máximo de la columna en <code>timeColIndex</code>,
+     * por cada grupo.
      */
     private void secondPass() {
-        SelectFromWhere selGroupCols = new SelectFromWhere(
-            program.getAnalysisInfo().getColsToTally(),
-            program.getAnalysisInfo().getDataHeader(),
-            row -> row.getCell(program.getAnalysisInfo().getBoolColIndex()).getBool()
-        );
-        SegmentedTimePeriod period = new SegmentedTimePeriod(
-            program.getMinTime(),
-            program.getMaxTime(),
-            program.getAnalysisInfo().getNumSegments()
-        );
-        countByTime = new CountByTime(
-            selGroupCols,
-            period, program.getGroupReps(),
-            program.getAnalysisInfo().getTimeColIndex()
-        );
+        minMaxTime = new MinMaxTimeGroup(program.getGroupQuery(), program.getAnalysisInfo().getTimeColIndex());
         try {
             RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
-            processor.process(countByTime);
+            processor.process(minMaxTime);
         } catch (IOException e) {
             Reviews.LOGGER.severe("No se puede leer el archivo temporal: " + datasetFrag.getName());
         }
     }
 
     /**
-     * Regresa la tarea actual del worker
-     * @return la tarea actual del worker
+     * Realiza la tercer pasada, local al fragmento que procesa el worker.
+     * Construye la serie de tiempo de la cantidad de filas tales que su valor
+     * en la columna <code>boolColIndex</code> es verdadero menos las filas en
+     * las que es falso, por cada uno de los grupos formados.
      */
-    public Task getCurrentTask() {
-        return currentTask;
+    private void thirdPass() {
+        diffTime = new DifferenceTimeGroup(
+                program.getGroupQuery(),
+                program.getPeriodMap(),
+                program.getAnalysisInfo().getTimeColIndex(),
+                program.getAnalysisInfo().getBoolColIndex()
+        );
+        try {
+            RowProcessor processor = new RowProcessor(datasetFrag, program.getAnalysisInfo().getDataHeader());
+            processor.process(diffTime);
+        } catch (IOException e) {
+            Reviews.LOGGER.severe("No se puede leer el archivo temporal: " + datasetFrag.getName());
+        }
     }
 
     /**
-     * Asigna la tarea del worker
-     * @param currentTask la nueva tarea del worker
+     * Regresa la operación local de contar valores únicos
+     *
+     * @return la operación local de contar valores únicos
      */
-    public void setCurrentTask(Task currentTask) {
-        this.currentTask = currentTask;
+    public Tally getTally() {
+        return tally;
     }
 
     /**
-     * Regresa el arreglo de contadores de valores únicos por columna, local al fragmento que procesa el worker
-     * @return el arreglo de contadores de valores únicos por columna, local al fragmento que procesa el worker
+     * Regresa la operación local de buscar tiempos mínimo y máximo
+     *
+     * @return la operación local de buscar tiempos mínimo y máximo
      */
-    public Counter<Cell>[] getUniqueCounters() {
-        return tally.getCounters();
+    public MinMaxTimeGroup getMinMaxTime() {
+        return minMaxTime;
     }
 
     /**
-     * Regresa el contador de las filas verdaderas por cada grupo, local al fragmento que procesa el worker
-     * @return el contador de las filas verdaderas por cada grupo, local al fragmento que procesa el worker
+     * Regresa la operación local de acumular diferencias por segmentos de
+     * tiempo
+     *
+     * @return la operación local de acumular diferencias por segmentos de
+     * tiempo
      */
-    public Counter<Pair<Row, Integer>> getBoolCounter() {
-        return countByTime.getCounter();
+    public DifferenceTimeGroup getDiffTime() {
+        return diffTime;
     }
 
     /**
-     * Regresa el tiempo mínimo encontrado, local al fragmento que procesa el worker
-     * @return el tiempo mínimo encontrado, local al fragmento que procesa el worker
+     * Regresa el número de pasada que tiene asignada actualmente el worker
+     *
+     * @return el número de pasada que tiene asignada actualmente el worker
      */
-    public LocalDateTime getMinTime() {
-        return minMaxTime.getMin();
+    public int getPass() {
+        return pass;
     }
 
     /**
-     * Regresa el tiempo máximo encontrado, local al fragmento que procesa el worker
-     * @return el tiempo máximo encontrado, local al fragmento que procesa el worker
+     * Asigna el número de pasada del worker
+     *
+     * @param pass el nuevo número de pasada del worker
      */
-    public LocalDateTime getMaxTime() {
-        return minMaxTime.getMax();
+    public void setPass(int pass) {
+        this.pass = pass;
     }
 
 }

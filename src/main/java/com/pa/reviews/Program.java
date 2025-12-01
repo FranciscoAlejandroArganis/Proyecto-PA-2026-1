@@ -4,23 +4,25 @@
  */
 package com.pa.reviews;
 
-import com.pa.util.Pair;
 import com.pa.util.Counter;
 import com.pa.io.FileUtils;
 import com.pa.iter.CartesianProductIterator;
+import com.pa.query.SelectFrom;
 import com.pa.query.SelectFromWhere;
 import com.pa.stats.Accumulator;
 import com.pa.stats.SLRResult;
 import com.pa.table.Cell;
 import com.pa.table.Header;
 import com.pa.table.Row;
+import com.pa.time.SegmentedPeriod;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
@@ -42,7 +44,7 @@ public abstract class Program {
     protected int numFrags;
 
     /**
-     * La consulta proporcionada por el usuario para filtrar
+     * Consulta proporcionada por el usuario para filtrar
      */
     protected SelectFromWhere userQuery;
 
@@ -54,27 +56,23 @@ public abstract class Program {
     /**
      * Arreglo de contadores de valores únicos por cada columna de interés
      */
-    protected Counter<Cell>[] uniqueCounters;
+    protected Counter<Cell>[] columnCounters;
 
     /**
-     * Conjunto de combinaciones de valores de cada grupo
+     * Mapa de cada grupo formado a su periodo de tiempo segmentado
      */
-    protected Set<Row> groupReps;
+    protected Map<Row, SegmentedPeriod> periodMap;
 
     /**
-     * Contador de filas verdaderas por cada grupo y segmento
+     * Mapa de cada grupo formado a su serie de tiempo
      */
-    protected Counter<Pair<Row, Integer>> boolCounter;
+    protected Map<Row, Long[]> seriesMap;
 
     /**
-     * Mínimo tiempo encontrado hasta el momento
+     * Consulta usada para seleccionar filas que pertenecen a uno de los grupos
+     * formados
      */
-    protected LocalDateTime minTime;
-
-    /**
-     * Máximo tiempo encontrado hasta el momento
-     */
-    protected LocalDateTime maxTime;
+    protected SelectFromWhere groupQuery;
 
     /**
      * Construye un nuevo programa
@@ -88,11 +86,10 @@ public abstract class Program {
         this.filesInfo = filesInfo;
         this.numFrags = numFrags;
         this.analysisInfo = analysisInfo;
-        uniqueCounters = new Counter[analysisInfo.getColsToTally().size()];
-        for (int i = 0; i < uniqueCounters.length; i++) {
-            uniqueCounters[i] = new Counter<>();
+        columnCounters = new Counter[analysisInfo.getGroupColumns().size()];
+        for (int i = 0; i < columnCounters.length; i++) {
+            columnCounters[i] = new Counter<>();
         }
-        boolCounter = new Counter<>();
     }
 
     /**
@@ -135,24 +132,19 @@ public abstract class Program {
     protected void results() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filesInfo.getResults()))) {
             StringBuilder sb = new StringBuilder();
-            sb.append(minTime);
-            sb.append(" : ");
-            sb.append(maxTime);
-            sb.append("\n\n");
-            for (Row rep : groupReps) {
+            for (Map.Entry<Row, SegmentedPeriod> entry : periodMap.entrySet()) {
+                Row rep = entry.getKey();
+                SegmentedPeriod period = entry.getValue();
+                Long[] timeSeries = seriesMap.get(rep);
                 Accumulator acc = new Accumulator(2);
                 sb.append(rep);
-                sb.append("\n[");
-                for (int i = 0; i < analysisInfo.getNumSegments(); i++) {
-                    if (i > 0) {
-                        sb.append(", ");
-                    }
-                    Pair<Row, Integer> pair = new Pair<>(rep, i);
-                    long count = boolCounter.getCount(pair);
-                    sb.append(count);
-                    acc.add(new double[]{i, count});
-                }
-                sb.append("]\n");
+                sb.append(" from ");
+                sb.append(period.getStart());
+                sb.append(" to ");
+                sb.append(period.getEnd());
+                sb.append('\n');
+                sb.append(Arrays.toString(timeSeries));
+                sb.append('\n');
                 SLRResult slr = acc.simpleLinearRegression(0, 1);
                 sb.append("m = ");
                 sb.append(slr.getSlope());
@@ -172,12 +164,13 @@ public abstract class Program {
     }
 
     /**
-     * Construye el conjunto de grupos a partir de los valores más frecuentes
+     * Construye los grupos a partir de los valores más frecuentes de cada
+     * columna de interés
      */
     protected void buildGroups() {
-        Cell[][] valuesPerColumn = new Cell[analysisInfo.getColsToTally().size()][];
-        for (int i = 0; i < uniqueCounters.length; i++) {
-            Counter<Cell> counter = uniqueCounters[i];
+        Cell[][] columnValues = new Cell[analysisInfo.getGroupColumns().size()][];
+        for (int i = 0; i < columnCounters.length; i++) {
+            Counter<Cell> counter = columnCounters[i];
             Set<Cell> uniquesInColumn = counter.getMap().keySet();
             PriorityQueue<Cell> maxQueue = new PriorityQueue<>(
                     uniquesInColumn.size(),
@@ -188,15 +181,24 @@ public abstract class Program {
             for (int j = 0; j < mostFrequentValues.length; j++) {
                 mostFrequentValues[j] = maxQueue.poll();
             }
-            valuesPerColumn[i] = mostFrequentValues;
+            columnValues[i] = mostFrequentValues;
         }
-        uniqueCounters = null;
-        groupReps = new HashSet<>();
-        CartesianProductIterator<Cell> iter = new CartesianProductIterator<>(valuesPerColumn);
+        columnCounters = null;
+        periodMap = new HashMap<>();
+        seriesMap = new HashMap<>();
+        CartesianProductIterator<Cell> iter = new CartesianProductIterator<>(columnValues);
         while (iter.hasNext()) {
-            Row rep = new Row(analysisInfo.getColsToTally(), iter.next());
-            groupReps.add(rep);
+            Row rep = new Row(analysisInfo.getGroupColumns(), iter.next());
+            periodMap.put(rep, new SegmentedPeriod(analysisInfo.getNumSegments()));
+            Long[] timeSeries = new Long[analysisInfo.getNumSegments()];
+            Arrays.fill(timeSeries, 0l);
+            seriesMap.put(rep, timeSeries);
         }
+        SelectFrom selRep = new SelectFrom(analysisInfo.getGroupColumns(), analysisInfo.getDataHeader());
+        groupQuery = new SelectFromWhere(
+                selRep,
+                row -> periodMap.containsKey(selRep.apply(row))
+        );
     }
 
     /**
@@ -249,62 +251,37 @@ public abstract class Program {
      *
      * @return el arreglo de contadores de valores únicos por columna
      */
-    public Counter<Cell>[] getUniqueCounters() {
-        return uniqueCounters;
+    public Counter<Cell>[] getColumnCounters() {
+        return columnCounters;
     }
 
     /**
-     * Regresa el contador de las filas verdaderas por cada grupo
+     * Regresa el mapa de grupos a periodos segmentados
      *
-     * @return el contador de las filas verdaderas por cada grupo
+     * @return el mapa de grupos a periodos segmentados
      */
-    public Counter<Pair<Row, Integer>> getBoolCounter() {
-        return boolCounter;
+    public Map<Row, SegmentedPeriod> getPeriodMap() {
+        return periodMap;
     }
 
     /**
-     * Regresa el conjunto de grupos
+     * Regresa el mapa de grupos a series de tiempo
      *
-     * @return el conjunto de grupos
+     * @return el mapa de grupos a series de tiempo
      */
-    public Set<Row> getGroupReps() {
-        return groupReps;
+    public Map<Row, Long[]> getSeriesMap() {
+        return seriesMap;
     }
 
     /**
-     * Regresa el tiempo mínimo encontrado
+     * Regresa la consulta que únicamente selecciona las filas que pertencen a
+     * alguno de los grupos formados
      *
-     * @return el tiempo mínimo
+     * @return la consulta que únicamente selecciona las filas que pertencen a
+     * alguno de los grupos formados
      */
-    public LocalDateTime getMinTime() {
-        return minTime;
-    }
-
-    /**
-     * Asigna el tiempo mínimo encontrado
-     *
-     * @param minTime el nuevo tiempo mínimo
-     */
-    public void setMinTime(LocalDateTime minTime) {
-        this.minTime = minTime;
-    }
-
-    /**
-     * Regresa el tiempo máximo encontrado
-     *
-     * @return el tiempo máximo
-     */
-    public LocalDateTime getMaxTime() {
-        return maxTime;
-    }
-
-    /**
-     * Asigna el tiempo máximo encontrado
-     *
-     * @param maxTime el nuevo tiempo máximo
-     */
-    public void setMaxTime(LocalDateTime maxTime) {
-        this.maxTime = maxTime;
+    public SelectFromWhere getGroupQuery() {
+        return groupQuery;
     }
 
     /**
@@ -404,9 +381,9 @@ public abstract class Program {
         private Header dataHeader;
 
         /**
-         * Cabecera con las columnas de las que se cuentan valores únicos
+         * Cabecera con las columnas de interés para formar grupos
          */
-        private Header colsToTally;
+        private Header groupColumns;
 
         /**
          * Cantidad máxima de valores únicos a tomar por columna para formar
@@ -435,8 +412,8 @@ public abstract class Program {
          * Construye un nuevo registro de información del análisis
          *
          * @param dataHeader es la cabecera del conjnuto de datos
-         * @param colsToTally es una cabecera con las columnas de las que se
-         * cuentan los valores únicos
+         * @param groupColumns una cabecera con las columnas de interés para
+         * formar grupos
          * @param maxUniques es la máxima cantidad de valores únicos que se
          * toman por columna para formar grupos
          * @param timeColIndex es el índice de la columna de donde se toma el
@@ -446,9 +423,9 @@ public abstract class Program {
          * @param numSegments es el número de segmentos en los que se divide el
          * periodo de tiempo
          */
-        public AnalysisInfo(Header dataHeader, Header colsToTally, int maxUniques, int timeColIndex, int boolColIndex, int numSegments) {
+        public AnalysisInfo(Header dataHeader, Header groupColumns, int maxUniques, int timeColIndex, int boolColIndex, int numSegments) {
             this.dataHeader = dataHeader;
-            this.colsToTally = colsToTally;
+            this.groupColumns = groupColumns;
             this.maxUniques = maxUniques;
             this.timeColIndex = timeColIndex;
             this.boolColIndex = boolColIndex;
@@ -465,12 +442,12 @@ public abstract class Program {
         }
 
         /**
-         * Regresa las columnas de las que se cuentan valores únicos
+         * Regresa las columnas de interés para formar grupos
          *
-         * @return las columnas de las que se cuentan valores únicos
+         * @return las columnas de interés para formar grupos
          */
-        public Header getColsToTally() {
-            return colsToTally;
+        public Header getGroupColumns() {
+            return groupColumns;
         }
 
         /**
