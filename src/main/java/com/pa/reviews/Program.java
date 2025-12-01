@@ -145,6 +145,9 @@ public abstract class Program {
                 sb.append('\n');
                 sb.append(Arrays.toString(timeSeries));
                 sb.append('\n');
+                for (int i = 0; i < timeSeries.length; i++) {
+                    acc.add(new double[]{i, timeSeries[i]});
+                }
                 SLRResult slr = acc.simpleLinearRegression(0, 1);
                 sb.append("m = ");
                 sb.append(slr.getSlope());
@@ -366,7 +369,7 @@ public abstract class Program {
         public File getResults() {
             return results;
         }
-
+        
     }
 
     /**
@@ -491,7 +494,7 @@ public abstract class Program {
         public int getNumSegments() {
             return numSegments;
         }
-
+        
     }
-
+    
 }
