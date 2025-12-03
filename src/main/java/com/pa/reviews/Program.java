@@ -145,8 +145,10 @@ public abstract class Program {
                 sb.append('\n');
                 sb.append(Arrays.toString(timeSeries));
                 sb.append('\n');
+                long sum = 0;
                 for (int i = 0; i < timeSeries.length; i++) {
-                    acc.add(new double[]{i, timeSeries[i]});
+                    sum += timeSeries[i];
+                    acc.add(new double[]{i, sum});
                 }
                 SLRResult slr = acc.simpleLinearRegression(0, 1);
                 sb.append("m = ");
@@ -176,7 +178,7 @@ public abstract class Program {
             Counter<Cell> counter = columnCounters[i];
             Set<Cell> uniquesInColumn = counter.getMap().keySet();
             PriorityQueue<Cell> maxQueue = new PriorityQueue<>(
-                    uniquesInColumn.size(),
+                    Math.max (1, uniquesInColumn.size()),
                     (a, b) -> counter.getCount(a) <= counter.getCount(b) ? 1 : -1
             );
             maxQueue.addAll(uniquesInColumn);
